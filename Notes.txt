@@ -1,0 +1,64 @@
+
+0- create Project 
+    - open command prompt
+    - composer create-project laravel/laravel example-app
+    - cd example-app
+    - code .
+    - php artisan serve
+
+1- create db
+    - phpMyAdmin
+    - .env
+2- Migration for parant table
+    - php artisan make:migration create_categories:table
+    - write in file migration all attributes in this table
+    - write also forien key if exists
+    - php artisan migrate
+    - php artisan migrate:status
+3- add column for custom table
+    - php artisan make:migration add_phone_to_categories:table
+    - write in this file syntax of D.T
+    - php artisan migrate
+    - php artisan migrate:status
+4- create all models for tables 
+    - php artisan make:model Admin
+    - class User must be inherite Authenticatable
+    - protected $fillable = [ all column that will be fill any time ];
+    - protected $guarded  = [ all column that will not be fill any time ];
+    - protected $hidden   = [ ex password, remember_token];
+    - protected $casts    = ['email_verified_at' => 'datetime']; هتعامل معاه ازاي الديفلوبر وهوه محافظ علي اسمه في الداتا بيز عادي
+    - Write all relationships  ex:  addresses().
+5- Multi Authentication 
+    - download node module  in my laptop
+    - composer require laravel/breeze  
+    - php artisan breeze:install    
+    - npm install       
+    - npm run dev 
+
+    - Test Auth cycle
+        - add phone in controller register & views
+    - Model must implements MustVerifyEmail
+    - MailTrap config in .env
+    - edit in config > auth.php  file.
+        - 'defaults' => ['guard' => 'web', 'passwords' => 'users']
+
+        - 'guards' => [
+                'web'   => [ 'driver' => 'session', 'provider' => 'users' ],
+                'admin' => [ 'driver' => 'session', 'provider' => 'admins'],
+                'seller'=> [ 'driver' => 'session', 'provider' => 'sellers']
+        ],
+
+        - 'providers' => [
+            'users'   => [ 'driver' => 'eloquent', 'model' => App\Models\User::class],
+            'admins'  => [ 'driver' => 'eloquent', 'model' => App\Models\Admin::class],
+            'sellers' => [ 'driver' => 'eloquent', 'model' => App\Models\Seller::class],
+        ],
+
+        - 'passwords' => [
+            'users'   => [ 'provider' => 'users',  'table' => 'password_resets', 'expire' => 60, 'throttle' => 60],
+            'admins'  => [ 'provider' => 'admins', 'table' => 'password_resets', 'expire' => 60, 'throttle' => 60],
+            'sellers' => [ 'provider' => 'sellers','table' => 'password_resets', 'expire' => 60, 'throttle' => 60],
+        ]
+
+edit routes 
+
