@@ -115,8 +115,8 @@ return [
             'expire' => 60,
             'throttle' => 60,
         ],
-        'users' => [
-            'provider' => 'users',
+        'sellers' => [
+            'provider' => 'sellers',
             'table' => 'seller_password_resets',
             'expire' => 60,
             'throttle' => 60,
@@ -135,5 +135,22 @@ return [
     */
 
     'password_timeout' => 10800,
+
+    /*
+    |--------------------------------------------------------------------------
+    | Route Guard Map
+    |--------------------------------------------------------------------------
+    |
+    | Array can map between the guard name and the route name for every guard
+    | we use it in middleware and notification class
+    |
+    |
+    |
+    */
+
+    'route_guard_map' => [
+        'web'=>'users.',
+        'seller'=>'sellers.'
+    ]
 
 ];

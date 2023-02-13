@@ -2,13 +2,15 @@
 
 namespace App\Models;
 
-use Illuminate\Database\Eloquent\Model;
-use Illuminate\Contracts\Auth\MustVerifyEmail;
+use Laravel\Sanctum\HasApiTokens;
+use Illuminate\Notifications\Notifiable;
+use App\Traits\SendPasswordResetNotification;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Foundation\Auth\User as Authenticatable;
 
-class Admin extends Model implements MustVerifyEmail
+class Admin extends Authenticatable
 {
-    use HasFactory;
+    use HasApiTokens, HasFactory, Notifiable, SendPasswordResetNotification;
         
     /**
      * fillable
@@ -20,8 +22,8 @@ class Admin extends Model implements MustVerifyEmail
         'email',
         'password', 
         'phone',
-        'status',
-        'remember_token'
+        'remember_token',
+        'email_verified_at'
     ];
     
     /**
@@ -32,6 +34,15 @@ class Admin extends Model implements MustVerifyEmail
     protected $hidden = [
         'password',
         'remember_token',
+    ];
+
+    /**
+     * The attributes that should be cast.
+     *
+     * @var array<string, string>
+     */
+    protected $casts = [
+        'email_verified_at' => 'datetime',
     ];
 
 }

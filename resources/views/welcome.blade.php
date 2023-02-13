@@ -44,9 +44,8 @@
                         <a href="{{ route('users.login') }}" class="text-sm text-gray-700 dark:text-gray-500 underline mr-2">User Log in</a>
                         <a href="{{ route('admins.login') }}" class="text-sm text-gray-700 dark:text-gray-500 underline mr-2">Admin Log in</a>
                         <a href="{{ route('sellers.login') }}" class="text-sm text-gray-700 dark:text-gray-500 underline mr-2">Seller Log in</a>
-                        @if (Route::has('users.register') || Route::has('sellers.register') || Route::has('admins.register'))
+                        @if (Route::has('users.register') || Route::has('sellers.register'))
                         <a href="{{ route('users.register') }}" class="ml-4 text-sm text-gray-700 dark:text-gray-500 underline mr-2">Register As User</a>
-                        <a href="{{ route('admins.register') }}" class="ml-4 text-sm text-gray-700 dark:text-gray-500 underline mr-2">Register As Admin</a>
                         <a href="{{ route('sellers.register') }}" class="ml-4 text-sm text-gray-700 dark:text-gray-500 underline mr-2">Register As Seller</a>
                         @endif
                     @endauth

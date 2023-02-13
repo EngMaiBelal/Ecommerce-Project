@@ -1,4 +1,3 @@
-
 0- create Project 
     - open command prompt
     - composer create-project laravel/laravel example-app
@@ -8,18 +7,21 @@
 
 1- create db
     - phpMyAdmin
-    - .env
-2- Migration for parant table
+    - .env configuration
+
+2- Migration at first for parant table 
     - php artisan make:migration create_categories:table
     - write in file migration all attributes in this table
     - write also forien key if exists
     - php artisan migrate
     - php artisan migrate:status
+
 3- add column for custom table
     - php artisan make:migration add_phone_to_categories:table
     - write in this file syntax of D.T
     - php artisan migrate
     - php artisan migrate:status
+
 4- create all models for tables 
     - php artisan make:model Admin
     - class User must be inherite Authenticatable
@@ -28,18 +30,18 @@
     - protected $hidden   = [ ex password, remember_token];
     - protected $casts    = ['email_verified_at' => 'datetime']; هتعامل معاه ازاي الديفلوبر وهوه محافظ علي اسمه في الداتا بيز عادي
     - Write all relationships  ex:  addresses().
+
 5- Multi Authentication 
     - download node module  in my laptop
     - composer require laravel/breeze  
     - php artisan breeze:install    
     - npm install       
     - npm run dev 
-
     - Test Auth cycle
-        - add phone in controller register & views
-    - Model must implements MustVerifyEmail
-    - MailTrap config in .env
-    - edit in config > auth.php  file.
+        - add phone in controller register & views.
+    - Model (admin, user, seller) must implements MustVerifyEmail & extends Authenticatable
+    - Write the MailTrap configuration in .env.
+    - Edit in config > auth.php  file.
         - 'defaults' => ['guard' => 'web', 'passwords' => 'users']
 
         - 'guards' => [
@@ -55,10 +57,669 @@
         ],
 
         - 'passwords' => [
-            'users'   => [ 'provider' => 'users',  'table' => 'password_resets', 'expire' => 60, 'throttle' => 60],
-            'admins'  => [ 'provider' => 'admins', 'table' => 'password_resets', 'expire' => 60, 'throttle' => 60],
-            'sellers' => [ 'provider' => 'sellers','table' => 'password_resets', 'expire' => 60, 'throttle' => 60],
+            'users'   => [ 'provider' => 'users'   , 'table' => 'password_resets'       , 'expire' => 60, 'throttle' => 60],
+            'admins'  => [ 'provider' => 'admins'  , 'table' => 'admin_password_resets' , 'expire' => 60, 'throttle' => 60],
+            'sellers' => [ 'provider' => 'sellers' , 'table' => 'seller_password_resets', 'expire' => 60, 'throttle' => 60],
         ]
 
-edit routes 
+    2- migration 
+            - copy from create_password_resets and make two table
+                1- create_seller_password_resets
+                2- create_admin_password_resets
 
+6- edit routes 
+
+
+
+
+
+------------------------------------------------------------------------------------------------------
+// ********* multi auth ********* //
+------------------------------------------------------------------------------------------------------
+
+1- abstract class auth implements 4 interface in contracts folder 
+    a- AuthenticatedSessionController
+        1- Generate New namespace.
+
+        2- abstract class AuthenticatedSessionController extends Controller  implements
+            GuardInterface,
+            RouteNamePrefixInterface,
+            ViewPrefixInterface
+
+        3- Replacements
+                1- return view('auth.login');
+                return view($this->getViewPrefix(). 'auth.login');
+        
+                2- $request->authenticate();
+                $request->authenticate($this->getGuard());
+
+                3- return redirect()->intended(RouteServiceProvider::HOME); >>>> public const HOME = '/dashboard';
+                return redirect()->route($this->getRouteNamePrefix() . 'dashboard');
+        
+                4- Auth::logout();
+                Auth::guard($this->getGuard())->logout();
+
+                5- return redirect('/');
+                return redirect()->route($this->getRouteNamePrefix() . 'login');
+    b- ConfirmablePasswordController extends Controller implements
+        1- ViewPrefixInterface, GuardInterface, RouteNamePrefixInterface
+        2- Replacements:- 
+            - view($this->getViewPrefix() . 'auth.confirm-password');
+            - Auth::guard($this->getGuard())......
+            - ..... $request->user($this->getGuard())->email,....
+            - return redirect()->route($this->getRouteNamePrefix() . '.dashboard');
+    c- EmailVerificationNotificationController extends Controller 
+        1- implements GuardInterface, RouteNamePrefixInterface
+        2- Replacements:- 
+        
+            - $request->user($this->getGuard()) .... 
+            - redirect()->route($this->getRouteNamePrefix() . 'dashboard');
+            - $request->user($this->getGuard()) ....
+    d- EmailVerificationPromptController 
+        1- implements GuardInterface, RouteNamePrefixInterface, ViewPrefixInterface
+
+        2- Replacements:- 
+            - $request->user($this->getGuard()) .....
+            - redirect()->route($this->getRouteNamePrefix() . '.dashboard')
+            - view($this->getViewPrefix().'auth.verify-email');
+    e- abstract class NewPasswordController extends Controller 
+        1- implements RouteNamePrefixInterface, ViewPrefixInterface, BrokerInterface
+        2- Replacements:- 
+            - view($this->getViewPrefix() . 'auth.reset-password'.......
+            - Password::broker($this->getBroker())->reset(......
+            - ? redirect()->route($this->getRouteNamePrefix() . 'login')....         
+    f- PasswordController
+        1- implements GuardInterface
+        2- Replacements:- 
+            - $request->user($this->getGuard())......         
+    g- PasswordResetLinkController
+        1- implements ViewPrefixInterface, BrokerInterface
+        2- Replacements:- 
+            - $this->getViewPrefix() . 'auth.forgot-password');
+            - Password::broker($this->getBroker())......
+    h- RegisteredUserController 
+        1- implements ViewPrefixInterface, GuardInterface, RouteNamePrefixInterface, ModelInterface
+        2- Replacements:- 
+
+            - view($this->getViewPrefix() . 'auth.register');
+            - $user = $this->getModel()::create([
+            - Auth::guard($this->getGuard())->login($user);
+            - return redirect()->route($this->getRouteNamePrefix() . 'dashboard');
+    i- VerifyEmailController 
+        1- implements GuardInterface, RouteNamePrefixInterface
+        2- Replacements:- 
+            - $route = route($this->getRouteNamePrefix() . 'dashboard') . '?verified=1'; # url . ?verified=1
+            - if ($request->user($this->getGuard())->hasVerifiedEmail()) { return redirect($route); }
+            - if ($request->user($this->getGuard())->markEmailAsVerified()) { event(new Verified($request->user($this->getGuard())));}
+            - return redirect($route);
+    h- move ProfileController in Auth folder
+        
+        1- implements GuardInterface, RouteNamePrefixInterface, ViewPrefixInterface
+        2- Replacements:- 
+            - view($this->getViewPrefix() . 'profile.edit', [
+            - $request->user($this->getGuard()).... 6 times
+            - Redirect::route($this->getRouteNamePrefix().'profile.edit')->with('status', 'profile-updated');
+            - Auth::guard($this->getGuard())->logout();
+            - Redirect::route('welcome'); -->  return Redirect::to('/');
+2- User/ Seller /Admin folder >> Auth 
+    a- implements the properties and set(), get() methods
+    b- ex:- 
+        private $guard = "seller";
+        private $model = Seller::class;   
+        private $viewPrefix = 'seller.';   
+        private $routeNamePrefix = 'sellers.';
+
+        public function getGuard() :string { return $this->guard; }
+        public function setGuard(string $guard) :void { $this->guard = $guard; }
+
+    c- override method store if you need
+            - 'email' => ['required', 'string', 'email', 'max:255', 'unique:'.$this->getModel()],
+
+
+3- routes
+    - put RouteName for ('welcome') -> name('welcome');
+    - we use 3 middleware
+        1- middleware('guest')                      -> 'register', 'login', 'forgot-password', 'reset-password'
+        2- middleware('auth:web')                   -> 'verify-email', 'verify-email/{id}/{hash}', 'email/verification-notification', 'confirm-password', 'confirm-password', 'password', 'logout'
+        3- middleware(['auth:web', /*'verified:web'*/]) -> dashboard, profile
+    - view('user.dashboard')
+    - name('users.-----')
+    - namespace
+4- views
+    - replace route('logout') ----> route('users.logout')
+    - replace Auth::user()    ----> Auth::guard('web')->user()
+    - replace @include()      ----> @include('user.')
+
+    
+1- problem (verification.verify)
+    - verification.email
+        \vendor\laravel\framework\src\Illuminate\Auth\Notifications\VerifyEmail.php
+        
+    - Route::get('verify-email/{id}/{hash}', [VerifyEmailController::class, '__invoke'])
+        ->middleware(['signed', 'throttle:6,1'])->name('verification.verify');  // make user verified
+    
+    - The user model implement interface mustVerifyEmail abstract method without implements that contains the method
+    but i notice the method not implementation in the model 
+    but in trait \vendor\laravel\framework\src\Illuminate\Auth\MustVerifyEmail.php
+    
+    - the method --> sendEmailVerificationNotification()
+        $this->notify(new VerifyEmail); --> $this->notify(new VerifyUserEmail);
+    - make notification 
+        php artisan make:notification VerifyUserEmail 
+        Replace 'verification.verify' to 'users.verification.verify'
+
+2- problem (verification.notice)
+    - انا مش عارف احدد انهي middleware 'verified:web' ??
+
+    - Route::get('verify-email', [EmailVerificationPromptController::class, '__invoke'])
+                    ->name('verification.notice'); // return email view
+    
+    - \vendor\laravel\framework\src\Illuminate\Auth\Middleware\EnsureEmailIsVerified.php
+    الراوت استاتيك هنا في الفيل ده 
+    ده الميدلوير الللي لارقل بتستخدمه عشان تشيك اليوزر فريفاي والا لا
+
+        - هنقله في الابلكيشن Middleware المصفه filterion http requests  عن طريقif
+        - وال kernel.php هغير باصص فين registered it 
+            - 'verified' => \App\Http\Middleware\EnsureEmailIsVerified::class,
+        - 3 Auth Middleware    
+            - auth     ----> login 
+            - verified ----> verified
+            - guest
+        - php artisan make:Middleware EnsureEmailIsVerified
+        -  هنا الراوت استاتيك وانا عاوز اخليه لليوزر والسيلر مش عاوز اعمل اتنين ميدل وير اعمله برامتر
+        - steps:-
+            - make private array $routeGuardMap = ['web'=>'users.', 'seller'=>'sellers.'];
+            - getRouteGuardMap($guard) --> handle if developer write seller, admins, ....... , any wrong route
+            - add parameter handle($request, Closure $next, $guard = null, $redirectToRoute = null)
+            - replace $request->user() --> $request->user($guard) ||
+            - : $this->getRouteGuardMap($guard).'verification.notice')); // user or seller
+
+3- problem (password.reset)
+    - route static where  ????  ---> in \vendor\laravel\framework\src\Illuminate\Auth\Notifications\ResetPassword.php
+    - I estimate (password.reset) is Class Notification
+        I make same class notification in my app & change the static route
+    - invoke it where     ????  ---> in \vendor\laravel\framework\src\Illuminate\Auth\Passwords\CanResetPassword.php
+        sendPasswordResetNotification($token)
+    - overwrride it where ????  ---> in User Model
+        replace (new ResetPasswordNotification($token)) ---> (new ResetUserPassword($token))
+
+- note:-
+    الميدل وير اللي بتكون حاطه ع اي حاجه لازم تكون عارف الجارد عشان تكون عارف هتريديركت ع فين
+
+4- problem how to make dynamic route in 2 notification class
+
+how to get guard from model
+    1- ممكن من فيل ال config
+    2- معتمد علي مين عامل لوجن حاليا وممكن من نفس البراوزر اقدر ادخل يوزر وادمن وسيلر 
+    فالفانكشن بتاعت سعد هتجبلي اول جارد عامل لوجن وخلاص فمستفدتش
+
+    $guards = array_keys(config('auth.guards'));
+    foreach ($guards as $guard){
+        if(Auth::guard($guard)->check()) ......
+    }
+
+
+    3- dd($notifiable); return model user
+    3- dd(config('auth.guards')); 
+        return array:4 [▼ // routes\web.php:22
+            "web" => array:2 [▶]
+            "admin" => array:2 [▶]
+            "seller" => array:2 [▶]
+            "sanctum" => array:2 [▶]
+        ]
+مش انسب حاجه لانه معتمد ان اسم البروفايدر لازم نفس اسم التابل
+
+- getGuardFromProvider(string $provider) :?string
+        - foreach ( config('auth.guards') as $guard => $values)
+        - if( $values['provider'] === $provider) --> return $guard
+                                           ifnot --> return null
+
+- getProviderFromModel(Model $model) :?string
+        - foreach ( config('auth.providers') as $provider => $values)
+        - if( $model instanceof $values['model'] ) --> return $provider
+                                                 --> return null
+- getGuardFromModel(Model $model) :?string
+        - return getGuardFromProvider(getProviderFromModel($model))
+
+- when i use the HELPER ??
+        - if the input of function and output of function is general.
+        - we use it as a helper.
+
+
+
+        - make folder in app >> support >> helpers.php and add functions
+        - register the helper file in composer.json
+            - autoload
+                    { "psr4":{},
+                        "files":["app/Support/Helpers.php"] 
+                    }
+            - composer dumpautoload
+
+
+        - protected function resetUrl($notifiable){
+            - $guard = getGuardFromModel($notifiable);
+            - make mapping [ web --> users, seller --> sellers, ....] 
+                as mapping array in Middleware\EnsureEmailIsVerified.php
+                - private array $routeGuardMap = [
+                    'web'=>'users.',
+                    'seller'=>'sellers.'
+                ];
+            - put the array in configration of the application --> config\auth.php
+            - 'route_guard_map' => [ 'web'=>'users.', 'seller'=>'sellers.', ......]
+            - and we can this array in any place 
+            - and update the code in middleware and notifications
+                - remove array and getter
+            - put getRouteGuardMap in helpers : 
+                - return config('auth.route_guard_map')[$guard]?? 'users.'
+
+            
+            
+            - update VerifyUserEmail
+                - function verificationUrl($notifiable)
+                    - $guard = getGuardFromModel($notifiable);
+                    - getRouteGuardMap($guard).'verification.verify',
+            
+            - update RestUserPassword
+                - function resetUrl($notifiable)
+                    - $guard = getGuardFromModel($notifiable);
+                    - return url(route( getRouteGuardMap($guard) . 'password.reset', [
+
+            - Rename classes to VerifyEmail & RestPassword & in user model
+            - put two method in 2 traits:- 
+                app\Traits\sendEmailVerificationNotification --> sendEmailVerificationNotification()
+                app\Traits\sendPasswordResetNotification     --> sendPasswordResetNotification($token)
+                
+            - use these traits in your model
+
+------------------------------------------------------------------------------------------------------------
+** Seller Auth
+-----------------------------------------
+    1- routes
+    2- Controllers/Seller/Auth
+    3- resources  guard, route, url 
+    4- model Seller
+        class Seller extends Authenticatable implements MustVerifyEmail {
+            use HasApiTokens, HasFactory, Notifiable, SendEmailVerificationNotification, SendPasswordResetNotification; 
+    5- migration, tables, add shop name, phone in views, method RegisteredUsercontroller.
+
+1- Error resources :-
+    - How to make component
+        * \app\View\Components\AppLayout.php
+            -  return view('user.layouts.app');
+        * \app\View\Components\GuestLayout.php
+            -  return view('user.layouts.guest');
+        * \app\View\Components\AppSellerLayout.php
+            -  return view('seller.layouts.app');
+        * \app\View\Components\GuestSellerLayout.php
+            -  return view('seller.layouts.guest');
+
+<x-app-layout>    --> <x-app-seller-layout>
+<x-guest-layout>  --> <x-guest-admin-layout>
+
+- middleware(guest:web)
+    لو انا عامل لوجين كيوزر دايما يوديني داشبرود
+    لو انا عاوز ادخل السيلر داشبورد وانا مش عامل لوجين هيرميني ع اللوجين
+
+    Difference:- 
+        1- auth  عامل login , register   --> ممنوع من login
+        2- guest  مش عامل not login      --> ممنوع من dashboard
+
+2- app\Http\Middleware\Authenticate.php
+
+    * condition middleware اي تغير في اسم الجارد هيسمعني هنا
+    * علي حسب الجارد علي حسب الميدلوير
+    * ميثود الهاندل هي اللي مهمه في الميدل وير
+    * عند ابوه الميدل وير
+    * عاوز ابعت الجاردز لميثود الريديريكت بدون ما اعمل اوفر لود
+
+    a- first solution 
+        - unauthenticated($request, array $guards){
+            throw new AuthenticationException(
+                'Unauthenticated.',
+                $guards,
+                $this->redirectTo($request, $guards)
+            );
+
+        - redirectTo وهسيبها زي ما هي ببرامتر واحد الريكوست
+        - fun_get_args اللي بباصسهم في الفانكشن
+
+    b- حل تاني اعمل ميثود تانيه
+        
+        - unauthenticated($request, array $guards){
+            throw new AuthenticationException(
+                'Unauthenticated.',
+                $guards,
+                $this->redirectToRoute($request, $guards)
+            );
+    
+        - redirectToRoute($request, $guards)
+        - redirectTo($request)
+                foreach ($guards as $guard) {
+                    if ($guard === 'web') {
+                        return route('users.login');
+                    } elseif ($guard === 'seller') {
+                        return route('sellers.login');
+                    } elseif ($guard === 'admin') {
+                        return route('admins.login');
+                    }
+                }
+3- Problem Notes:- 
+    - مشكله انه مش لاقي الجارد فبيعمل ريديركت مهمه
+    - 37 مهمه شرح الجارد 
+        انا دي الوقتي عامله لوجين كيوزر فجاردي الديفلوبرحبيت ادخل ع داش بورد سيلر
+        هيظهر جارد السيللر يحمي الراوت ومن هنا جت اللخبطه
+
+    - solution routes
+        Replace Route::middleware('guest') -> Route::middleware('guest:seller')
+        Replace Route::middleware('guest') -> Route::middleware('guest:admin')
+  
+4- app\Http\Middleware\RedirectIfAuthenticated.php
+
+
+    a- class RedirectIfAuthenticated بيتحكم في الجيست
+
+        - handle(Request $request, Closure $next, ...$guards){
+            $guards = empty($guards) ? [null] : $guards;
+            foreach ($guards as $guard) {
+                if (Auth::guard($guard)->check()) {               // لو الشخص عامل لوجين
+                    if ($guard === 'web') {
+                        return redirect()->route('users.dashboard');
+                    } elseif ($guard === 'seller') {
+                        return redirect()->route('sellers.dashboard');
+                    } elseif ($guard === 'admin') {
+                        return redirect()->route('admin.dashboard');
+                    }}}
+            return $next($request); }}                            // مش شخص عامل لوجين كمل علي ريكوستك
+------------------------------------------------------------------------------------------------------------
+** ProfileController Updates in User, Seller **
+------------------------------------------------
+
+    - profilecontroller هعمل fire event لو غير الميل  
+    - profileControler abstractAuth
+        - fire mail event(new Registered($user)) //معدل علي ايميله  يبعتله ميل
+        - app\Http\Controllers\AbstractAuth\Auth\ProfileController.php 
+            public function update(ProfileUpdateRequest $request): RedirectResponse
+                {
+                    $request->user($this->getGuard())->fill($request->validated());
+
+                    if ($request->user($this->getGuard())->isDirty('email')) {
+                        $request->user($this->getGuard())->email_verified_at = null;
+                    } .........}
+
+    - notes: fire verified event(new Verified($user)) 
+      // بعد ما دوس علي اللينك ده اللي بيملي الداتابيز بال توكن بعد ما ادوس علي لينك الفيرفايد في الاخر
+       
+------------------------------------------------------------------------------------------------------------
+** Admin Auth
+-----------------------------------------
+
+1- Routes Updates
+    How to insert admin in database:- 
+        - run query static وخلاص عندي
+        - صفحه الادمن تشتغل واحد يتسجل وبعدين اقفل
+        - Route::middleware(['auth:admin', /*'verified:admin'*/])  // stop this middleware
+
+2- make AdminFactory first
+    - php artisan make:factory AdminFactory
+    - class AdminFactory extends Factory
+        - definition() --> 
+            return [
+                    'name' => fake()->name(),                                                     // package
+                    'email' => fake()->unique()->safeEmail(),
+                    'email_verified_at' => now(),
+                    'password' => '$2y$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi', // password
+                    'remember_token' => Str::random(10)
+
+        - unverified() --> 
+            return $this->state(fn (array $attributes) => [ 'email_verified_at' => null,]
+
+3- database\seeders\DatabaseSeeder.php   الوسيط بين الداتا بيز والفاكتوري
+
+    - admin::factory(10)->create();
+        بعد ما اعمل والجدول يكون جاهز migration
+
+    - Admin::factory()->create([
+                'name' => 'Admin',
+                'email' => 'admin@ecommerce.com',
+                'password' => bcrypt('admin')
+            ]);
+
+    - الامر ده احطه يعد ما اعمل ميجراشن لجدول الادمن
+    - php artisan db:seed
+4- copy admin as seller in controllers, views, components
+5- controllers without
+    - EmailVerificationNotificationController
+    - EmailVerificationPromptController
+    - RegisteredUserController
+    - VerifyEmailController
+6- model
+    - Admin 
+        - extends Authenticatable 
+        - doesnot implement MustVerifyEmail
+        - use HasApiTokens, HasFactory, Notifiable, SendPasswordResetNotification only
+        
+7- views without views related deleted controllers
+    - Delete \resources\views\seller\profile\partials\delete-user-form.blade.php
+    - Delete this section  resources\views\admin\profile\partials\update-profile-information-form.blade.php
+
+        <!-- <form id="send-verification" method="post" action="{{ route('users.verification.send') }}">
+        </form> -->
+        <!-- @if ($user instanceof \Illuminate\Contracts\Auth\MustVerifyEmail && ! $user->hasVerifiedEmail()) 
+        @endif -->
+
+    - profilecontroller هعمل fire event لو غير الميل  مش هعملها مع الادمن
+
+8- components
+    x-admin-app, x-admin-guest, .....
+- note:- jwt package : guard "api" مبيعتمدش ع السيشن بيعتمد علي دريفر تاني هيوصل الداتا من البروفايدر للجارد
+--------------------------------------------------------------------------------------------------
+** testing **
+-------------
+
+- in the last test the cycle Auth and Seller Profile, Admin Profile, User Profile
+    - login problem:- 
+
+    هنخلي ال authenticate function
+    تاخد parameter  $guard
+    اللي احنا بنجيبه من getGuard
+    في كل controller
+    وجوا ال LoginRequest
+    هتباصي لل guard function ال parameter ده
+    - AbstractAuth -->  AuthenticatedSessionController
+
+        public function store(LoginRequest $request): RedirectResponse
+        {
+            $request->authenticate($this->getGuard());      // This is the line 
+
+            $request->session()->regenerate();
+
+            return redirect()->route($this->getRouteNamePrefix() . 'dashboard');
+        }
+
+    - LoginRequset Class
+    
+        public function authenticate($guard)               // Add parameter to this method 
+        {
+            $this->ensureIsNotRateLimited();
+
+            if (! Auth::guard($guard)->attempt($this->only('email', 'password'), $this->boolean('remember'))) {
+                RateLimiter::hit($this->throttleKey());
+
+                throw ValidationException::withMessages([
+                    'email' => trans('auth.failed'),
+                ]);
+            }
+
+            RateLimiter::clear($this->throttleKey());
+        }
+------------------------------------------------------------------------------------------------------
+// ********* Front-End ********* //
+------------------------------------------------------------------------------------------------------
+
+
+اول ما ندخل تبقي صفحه الاندكس
+
+    1- css, js , fonts, packages, front
+    2- التقسيمه
+    3- وال invokable controller
+        مهمه واحده 
+    4- يفتح صفخه الاندكس
+    5- مبحددش الميثود وانا بعمل الراوت
+
+1:42
+    frontend- where? 
+    1- assets public
+    2- or resources server render preformance high
+    3- donot depend on cdn
+
+
+routes
+frontend.php
+require it in web.php
+
+
+2/10
+
+AdminCycle
+ProfileRequest
+PasswordController
+
+
+------------------------------------------------------------------------------------------------------
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+---------------------------------------------------------------------------------
+Study:-
+    - how to send mail, notification ???? ' طريقتين يبعتوا ميل
+    - middleware parameters ???
+    - fake() package
+    - gitflow
+    - tamplates inheritance 
+
+    - html
+    - نذاكر كويس الايفنتس
+    - خلصنا التيست 
+
+---------------------------------------------------------------------------------
+MyProblems:- 
+    - test users\dashboard when login as sellers
+    - return route('users.login'); ??? من الاول خالص وانا عندي مشكله
+        - route seller register  --> validation
+        - profile --> Target class معملتش use in routes
+        - forget password --> name of class error
+        - النيم سبيس ال profilecontroller
+        - login seller, admin
+        - request handel ???
+
+    - user cycle ok.
+    - seller cycle ok
+---------------------------------------------------------------------------------
+** github **
+-------------------
+** pullrequet **
+طلب للتعديل بتاعي عند الادمن
+
+    0- master branch 
+    1- git clone https://github.com/galal-husseny/ecommerce-b2    // git clone in your laptop
+    2-  git checkout -b mai                                       // make branch جديد  
+        composer install
+        .env
+        php artisan key:generate
+        npm install
+        npm run dev
+        
+    3- edit the line code 
+    4- galal المتحكم 
+    5- in my branch
+        git add .
+        git commit 
+        git push this is not right
+        
+    6- ui, migration
+-----------------
+.git.ignore
+public/frontend-assets
+public/dashboard-assets
+package-lock.json
+composer.lock
+لازم 
+composer, package.json يكونو موجودين
+
+--------------------
+git flow
+git rm --cashed -r composer.lock
+
+@stack('scripts')000000000
+
+git history 
+git length 
