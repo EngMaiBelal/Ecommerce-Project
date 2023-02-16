@@ -29,11 +29,18 @@ ViewPrefixInterface
         ]);
     }
 
-    /**
+   /**
      * Update the user's profile information.
+     * 
+     * @param  Request $request
+     * @return RedirectResponse
      */
-    public function update(ProfileUpdateRequest $request): RedirectResponse
+    public function update(Request $request): RedirectResponse
     {
+        $rule = [
+            'name' => ['string', 'max:255'],
+            'email' => ['email', 'max:255', 'unique:'.$request->user($this->getGuard()).',email,'. $request->user($this->getGuard())->id],
+        ];
         
         $request->user($this->getGuard())->fill($request->validated());
 
