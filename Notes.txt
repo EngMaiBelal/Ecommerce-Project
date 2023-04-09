@@ -600,64 +600,124 @@ PasswordController
 
 
 
+- public/front-end-assets (user هيدخل عليه ال()
+    copy images, packages, css, js and fonts folders from frontend folder.
+- Public/dashboard-assets (admin, seller هيدخل عليه ال()
+    copy plugins, dist from admin-assets folder.
+- resources/views/user/html
+    copy html pages.
+
+notes:-
+- هنخلي الصفحه اول ما تفتح تبقي صفحه الويب سايت
+- واليوزر يعمل لوجين ويروح برضه لصفحه الاندكس
+
+- خاصه باليوزر فندخلها جوه
+
+    Route::get('/', function () {
+        return view('user.welcome');
+    })->name('welcome');
+
+- وندخل الصفحهwelcome دي جوه فولدر اليوزر في الريسورس
+rename and move welcome.blade.php --> resources\views\user\index.blade.php
 
 
+-\routes\frontend.php
+    - فيه كل الراوتس الحاصه بالفرونت وانكلودها في الويب
+Route::get('/', IndexController::class)->name('users.dashboard');
+    - php artisan make:controller User/IndexController --invokable
+    - هيتنده عليه لوحده وليه مهمه واحده وميثود واحده ومبذكرهاش وانا بعمل الراوت 
+    - public function __invoke()
+        {
+        return view('user.dashboard');
+        }
+- اي حاجه بتودي ع الداش بورد خليه يودي ع ال index 
+بس هيكتر عليه في التغيرانت فهاسمي الصفحه داش بورد ولكن محتواها صفحه الاندكس بالنسبه لفيو اليوزر
+
+-وقف الراوتس ده في \routes\users.auth.php
+    // Route::get('/dashboard', function () {
+        //     return view('user.dashboard');
+        // })->name('dashboard');
+        
+
+--------------------------------------------------------
+Templates Inheritance
+---------------------
+
+- Header, Footer, back to top ثابتين في الاب
+- copy (\resources\views\user\html\index.html) content in userIndex (\resources\views\user\dashboard.blade.php)
+- all css, js, images, .... href or src = from domain 
+- (http://127.0.0.1:8000/frontend-assets/css/main.css) == asset('/frontend-assets/css/main.css')
+  (currentDomain/frontend-assets/css/main.css)
 
 
+- create resources\views\user\layouts\parent.blade.php
+  include all static dashboard user content 
+	- <title>@yield('title')</title>
+    - @stack('links')</head>  لو حبيت ازود لينكات في الفحات الجايه جافا و css
+	- @yield('content')
+    - @stack('scripts')
+    - delete from parent
+        <!-- Slider -->
+        <!-- Banner -->
+        <!-- Product -->
+        
+    - divide the static content to component in resources\views\user\layouts\partials
+        <!-- Footer --> resources\views\user\layouts\partials\footer.blade.php
+        <!-- Header --> resources\views\user\layouts\partials\header.blade.php
+        <!-- cart -->   resources\views\user\layouts\partials\cart.blade.php
+        
+    1- in parent
+        @section('footer') 
+        سكشن متغير
+        سكشن وفي نفس الوقت yield
+        وبراحتك تقدر تعمله انكلود عادي هناك في ال child
+        @show
 
+    2- in child
+        @extends('user.layouts.parent')
+        @section('title','Home')
 
+        @section('content')
+            المحتوي
+            <!-- Slider -->
+            <!-- Banner -->
+            <!-- Product -->
+        @endsection
 
+        @section('footer') 
+        @parent
+        ................ // append doesnot override
+        @endsection
 
+    3- condition in header.php
+        @auth('web') 
+            <a href="#" class="flex-c-m trans-04 p-lr-25">
+                My Account
+            </a>
+        @endauth  
 
+        or
+        
+        @if(Auth::guard('web')->check())
 
+        @endif
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+        <ul class="main-menu" > 
+                        <li class="active-menu">
+                            <a href="#" class="dis-block icon-header-item cl2 hov-cl1 trans-04 p-l-22 p-r-11">
+                                <i class="zmdi zmdi-account"></i>
+                            </a>
+                            <ul class="sub-menu">
+                                @auth('web')
+                                    <li><a href="index.html">Profile</a></li>
+                                    <li><a href="home-02.html">Logout</a></li>
+                                @else
+                                    <li><a href="index.html">Login</a></li>
+                                    <li><a href="home-02.html">Register</a></li>
+                                @endauth
+                            </ul>
+                        </li>
+                    </ul>
 ---------------------------------------------------------------------------------
 Study:-
     - how to send mail, notification ???? ' طريقتين يبعتوا ميل
@@ -665,7 +725,9 @@ Study:-
     - fake() package
     - gitflow
     - tamplates inheritance 
-
+    - enums https://www.php.net/manual/en/language.enumerations.backed.php
+    - method check() Auth::guard('seller')->check() || Auth::guard('admin')->check();
+    - 
     - html
     - نذاكر كويس الايفنتس
     - خلصنا التيست 
@@ -706,7 +768,7 @@ MyProblems:-
         git push this is not right
         
     6- ui, migration
------------------
+---------------------------------------------------------------------------------
 .git.ignore
 public/frontend-assets
 public/dashboard-assets
@@ -714,12 +776,885 @@ package-lock.json
 composer.lock
 لازم 
 composer, package.json يكونو موجودين
-
---------------------
+--------------------------------------------------------------------
 git flow
 git rm --cashed -r composer.lock
 
-@stack('scripts')000000000
+@stack('scripts')
 
 git history 
-git length 
+git length
+
+--------------------------------------------------------------------------------------------------------
+problem validation:- 
+--------------------------
+1- ProfileController:-
+    public function update(Request $request): RedirectResponse
+        {
+            // request جايلي لارفل متقدرش تحدد انا في انهي جارد 
+            $rule = [
+                'name' => ['string', 'max:255'],
+                // 'email' => ['email', 'max:255', Rule::unique(User::class)->ignore($this->user()->id)],
+                // 'email' => ['email', 'max:255', 'unique: table-name, column-name, without id= id userlogin],
+                'email' => ['email', 'max:255', 'unique:'.$request->user($this->getGuard()).',email,'. $request->user($this->getGuard())->id],
+            ];
+        
+
+
+2- PasswordController
+    app\Http\Controllers\AbstractAuth\Auth\PasswordController.php
+    update this line:-
+        - 'current_password' => ['required', 'current_password']
+        - 'current_password' => ['required', 'current_password:'.$this->guard]
+
+
+--------------------------------------------------------------------------------------------------------
+we will add:-
+--------------------------
+    1- facebook login 
+    2- caption robot
+
+------------------------------------------
+
+add in .gitignore 
+    /public/frontend-assets
+    /public/dashboard-assets
+    composer.lock
+    package-lock.json
+-----------------------------------------------------------------------------------------------------------------
+translation:
+- edit all pages in two lang 
+    - two folders in lang (en, ar)
+    - validation , messages files with the same keys and different content (download from internet)
+        - call it in blade by
+        -   @if ($errors->get('phone'))
+                <ul class='text-sm text-red-600 dark:text-red-400 space-y-1 mt-2'>
+                    @foreach ($errors->get('phone') as $message)
+                        <p class="text-danger">{{ $message }}</p>
+                    @endforeach
+                </ul>
+            @endif
+    - i should be known that the content of pages are divides to 3 types 
+        1- didnot translate 
+        2- db translation
+        3- can be translate 
+- after translate all pages, we install mcamara package  ( https://github.com/mcamara/laravel-localization )
+- in the parent page:-
+    @if (App::currentLocale() == 'en')
+        <html lang="en" dir="ltr">
+    @else
+        <html lang="ar" dir="rtl">
+    @endif
+
+- in the header page:-
+     @foreach (LaravelLocalization::getSupportedLocales() as $lang => $value)
+        @if ($lang == App::currentLocale())
+            @continue
+        @endif
+        <a rel="alternate" hreflang="{{ $lang }}" href="{{ LaravelLocalization::getLocalizedURL($lang, null, [], true) }}"class="flex-c-m trans-04 p-lr-25">
+            {{ Str::upper($lang) }}
+        </a>
+    @endforeach
+------------------------------------------------------------------------------------------
+
+1- insert in db category, product, seller
+
+2- IndexController
+    - $products = Product::select('id', 'name', 'sale_price')->limit(16)->get();
+    - return view('user.dashboard', compact('products'));
+
+3- dashboard view
+    - forloop $product depond on App::currentLocale().
+    - https://github.com/spatie/laravel-translatable.
+    - handel it with package in model, setup, dashboard view.
+-----------------------------------------------------------------------------------------------------
+الفرق بين حساب البائع وحساب البائع الخاص بك 
+
+    - انا يوزر فعاوز اعمل اكونت سيلر وهيطلب منك حاجات زياده 
+    - new table ( sellers and in the same acount )/ فيه المعلومات الزياده اللي محتاجها هدخل فيه بيانات / بيورث من اليوزر ملوش شخصيه& user_id 
+    - وساعتها لازم تكون يوزر عشان تبقي سيلر 
+    - وكمان الجارد هيكون user 
+    - جارد جديد يعني سيشن جديد وجدول جديد بمعلومات جديده فانا هنا هحتاج بس يوزر وادمن
+-----------------------------------------------------------------------------------------------------
+crud product in seller:- 
+------------------------------------------------------
+    1- php artisan make:controller ProductsController --resource
+    2- Route::prefix('sellers')->name('sellers.')->middleware(['auth:seller', 'verified:seller'])->group(function() { Route::resource('products', ProductsController::class);});
+    3- In ProuctsController 
+        - index()
+            $products = Product::where('seller_id', Auth::guard('seller')->id())->get()
+            return view('seller.products.index', compact('products'))
+    4- view /seller /products 
+        - index داتا تابل
+        - create folder Enums/CategoryEnum.php
+            enum CategoryEnum :int { case ACTIVE = 1;  case NOT_ACTIVE = 0; }
+            https://www.php.net/manual/en/language.enumerations.backed.php
+    5- In ProuctsController 
+        - create()
+            $categories = Category::where('status', CategoryEnum::ACTIVE->value)->get();
+            return view('seller.products.create', compact('categories'));
+
+        - store()
+            - create validation request in this path  ----> app\Http\Requests\Product\StoreProductRequest.php
+            - StoreProductRequest extends FormRequest
+                    - authorize() { return Auth::guard('seller')->check() || Auth::guard('admin')->check(); }
+                        - request can be sharables between many controllers //
+                        - check() method return (yes or no).
+
+                    - rules() --> return [
+                                "name"   => ['required', 'array:ar,en'],
+                                'name.*' => ['required', 'min:2', 'max:128'],
+
+                                "description" => ['required', 'array:ar,en'],
+                                'description.*' => ['nullable', 'min:2', 'max:1000000'],
+
+                                "purchase_price" => ['required', 'numeric', 'min:1', 'max:99999999.99'],
+                                "sale_price"     => ['required', 'numeric', 'min:1', 'max:99999999.99'],
+                                وخلي سعر البيع يكون اعلي من الشراء
+
+                                "quantity" => ['required', 'integer', 'min:1', 'max:999'],
+                                "status"  => ['required', 'in:0,1'],
+                                "image"   => ['required', 'mimes:png', 'max:1024'],
+
+                                "category_id" => ['required', 'integer', 'exists:categories,id']]
+            - تظبيط الفيو 
+            - ازاي اجيب الحاجات المترجمه
+                @if ($errors->any())
+                    <div class="alert alert-danger">
+                        <ul>
+                            @foreach ($errors->all() as $error)
+                                <li>{{ $error }}</li>
+                            @endforeach
+                        </ul>
+                    </div>
+                @endif
+                
+                <form method="post" action="{{ route('sellers.products.store') }}" enctype="multipart/form-data">
+                    @csrf
+                    
+                    <input type="text" name="name[en]" class="form-control" id="name_en">
+
+                    <input type="text" name="name[ar]" class="form-control" id="name_ar">
+                    @if ($errors->get('name.ar'))
+                        <ul class='text-danger  space-y-1 mt-20'>
+                            @foreach ($errors->get('name.ar') as $message)
+                                <p class="text-danger">{{ $message }}</p>
+                            @endforeach
+                        </ul>
+                    @endif
+                    
+                    <input type="number" name="purchase_price" class="form-control" id="purchase_price">             
+                    <input type="number" name="sale_price" class="form-control"  id="sale_price">
+                    <input type="number" name="quantity" class="form-control" id="quantity">
+                   
+                    @if ($errors->get('quantity'))
+                        <ul class='text-danger  space-y-1 mt-20'>
+                            @foreach ($errors->get('quantity') as $message)
+                                <p class="text-danger">{{ $message }}</p>
+                            @endforeach
+                        </ul>
+                    @endif
+
+                    <select name="status" class="form-control" id="status">
+                        <option value="" disabled selected></option>
+                        <option value="1">{{__('seller.add_product.active')}}</option>
+                        <option value="0">{{__('seller.add_product.not_active')}}</option>
+                    </select>
+                    
+                    <select name="category_id" class="form-control" id="category_id">
+                        @foreach ($categories as $category)
+                            <option value="" disabled selected></option>
+                            <option value="{{$category->id}}">{{$category->name}}</option>
+                        @endforeach
+                    </select>
+                                        
+                    <textarea class="form-control" name="description[en]" placeholder="{{__('seller.add_product.description_en')}}"></textarea>
+                    <textarea class="form-control" name="description[ar]" placeholder="{{__('seller.add_product.description_ar')}}"></textarea>
+
+                    <input type="file" class="d-none" name="image" id="file" onchange="loadFile(event)">
+                    <label for="file">
+                        <img src="{{asset('custom-images/default.png')}}" alt="default" class="w-100 " id="image" style="cursor: pointer">
+                    </label>
+
+                    <button type="submit" class="button-general w-50"> {{__('seller.add_product.submit')}} </button>               
+                </form>
+            
+                @push('scripts')
+                    <script>
+                        var loadFile = function(event) {
+                            var output = document.getElementById('image');
+                            output.src = URL.createObjectURL(event.target.files[0]);
+                            output.onload = function() {
+                            URL.revokeObjectURL(output.src) // free memory
+                            }
+                        };
+                    </script>
+                @endpush
+
+----------------------------------------------------------------------------------------------------
+how to remove tailwind from the all project
+----------------------------------------------------------------------------------------------------
+    
+    - store()
+        - validation (form request)       
+            - C:\xampp\htdocs\studing\ecommerce-b2\app\Http\Requests\Product\StoreProductRequest.php
+            - difference between ($request->all, validated(), only(), expect())
+            - validated(), only() اللي بنعتمد عليهم
+
+        - developer generate code for seller in trait
+            - unique identifier for التعامل اللي مش مباشر in stock.
+            - unique identifier for التعامل المباشر )(التليفون والميل ) تعامل مع الداتا بيز in db
+            - add specs (الرامات البطاريه ......).
+
+        - image uploaded by two methods:-
+                - laravel (المنحه)
+                - package images (polymorphic relationship)
+                    - بيكون فيه جدول للميديا وببقي محتاج اسم الجدول صاحب الصوره وكمان ال id(modal_type, modal_id)
+                    - images table id, name, type (تبع مين user, seller) , type-id (user-id)
+                            - Disks meaning :-
+                                --> disk الوندز متقسم عشان التنظيم والداتا متروحش لو عملت ويندز جديد
+                                --> C:\xampp\htdocs\studing\ecommerce-b2\config\filesystems.php
+                                
+                                    - local  ---> not (accessable اقدر اوصلها باليووارال)(ملف جيسون و عقد و.....)     laravel store in it (by default)
+                                    - public ---> accessable by url (اي حد يقدر يعملها اكسس)     package store in it (by default)
+                                    - s3 (زي الجوجل درايف محفوظه وبالفلوس من امازون) هشتري ارقام اللي في الاراي وكمان اعرف اللارفل ازاي بترفعه 
+                                        زي جوجل درايف اي نوع من انواع الفيلات cloud storage to aws(amazon web service paid)
+
+                   - laravel media library  https://spatie.be/docs/laravel-medialibrary
+                        - خدبالك انها تكون اخر version
+                        - composer require "spatie/laravel-medialibrary:^10.2"
+                        - php artisan vendor:publish --provider="Spatie\MediaLibrary\MediaLibraryServiceProvider" --tag="migrations"
+                        - php artisan migrate
+                        - php artisan vendor:publish --provider="Spatie\MediaLibrary\MediaLibraryServiceProvider" --tag="config"
+                    - Automatic will appear this file
+                        - C:\xampp\htdocs\studing\ecommerce-b2\config\media-library.php
+                    - Prepearing modal
+                        - implements HasMedia interface
+                        - use InteractsWithMedia trait
+                        - use function registerMediaConversions() method to crop image
+
+                    - Associate media
+                        - ProductController
+                        - $request->validated() --> هيرجعلي اللي موجود في الfillable
+                                                    حتي لو انا مدخل الصوره في الفيو والا كاني شايفها
+
+                    - store(StoreProductRequest $request)
+                        1- generate code
+                            $code = genProductCode();
+                        2- validation  هيرجعلي اللي موجود في الfillable حتي لو انا مدخل الصوره في الفيو والا كاني شايفها
+                        3- $product = Product::create(array_merge($request->validated(), 
+                            ['code' => $code,
+                            'seller_id' => Auth::guard('seller')->id() //محتاجها وانا بعمل login]));
+                            $product->addMediaFromRequest('image')->toMediaCollection('products'); //image = name of key  //CollectionColumn products
+                            return redirect()->route('seller.products.index');}
+
+
+- How to make success alart ?
+    - sweet alert script handel https://sweetalert2.github.io/#usage         
+        1- In parent view 
+            <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+        2- In index view --> check the session
+                @if(session()->has('success')) 
+                    <script>
+                        Swal.fire(
+                            'Good job!',
+                            '{{session()->get("success")}}',
+                            'success'
+                        )
+                    </script>
+                @endif
+                @if(session()->has('error'))
+                    <script>
+                        Swal.fire(
+                            'Something went wrong!',
+                            '{{session()->get("error")}}',
+                            'error'
+                        )
+                    </script>
+                @endif
+
+        3- create file lang\ar\general.php & lang\en\general.php
+            <? php
+                return [
+                    'messages'=> [
+                        'success' => 'تمت العمليه بنجاح ',
+                        'updated' => 'تم التعديل بنجاج',
+                        'created' => 'تمت الاضافه بنجاح',
+                        'deleted' => 'تم الحذف بنجاح',
+                        'error' => 'فشلت العمليه',
+                    ]
+                ]; 
+
+        4- In controller
+            return redirect()->back()->with('success', __('general.messages.deleted'))
+    
+--------------------------------------------------------------------------------------------------------
+- The errors of media-laravel package 
+    - version package
+    - gb library extension 
+        https://stackoverflow.com/questions/39990516/laravel-intervention-image-gd-library-extension
+--------------------------------------------------------------------------------------------------------
+- index.php
+    - <a> </a>    --> by default get request
+    - get         --> sellers.products.show       --> sellers/products/{product}
+    - put patch   --> sellers.products.update     --> sellers/products/{product}
+    - delete      --> sellers.products.destroy    --> sellers/products/{product}
+
+    - <a href="{{route('sellers.products.show', $product->id)}}" class="btn btn-sm btn-success my-2 rounded-pill d-inline"> {{__('seller.all_products.show')}} </a>
+    - <a href="{{route('sellers.products.edit', $product->id)}}" class="btn btn-sm btn-primary my-2  rounded-pill d-inline"> {{__('seller.all_products.edit')}} </a>
+    - <form class="" action="{{route('sellers.products.destroy', $product->id)}}" method="post" class="d-inline">
+            @csrf
+            @method('DELETE')
+            <button class="btn btn-sm btn-danger  my-2 rounded-pill x" type="submit">
+                {{__('seller.all_products.delete')}}
+            </button>
+       </form>
+-------------------------------------------------------------------------------------------------
+RoutePrameter:-
+    - كل ما يبعت id هتروح تجيبه وتعمله find, fail
+    - or send it as route parameter
+    - destroy(Product $product) دي معناها id من جدول المنتج
+    
+-------------------------------------------------------------------------------------------------
+    - destroy($id)
+        - Product::whereId($id)->delete();
+        - Product::whereSalePrice(11)->delete();
+        - Product::where("id", = ,$id)->delete();
+        الثلاث سطور اللي فوق نفس المعني هوه هنا بيقول روح دور في الجدول بالقيمه دي طريقه مختصره
+        
+        علشان يمسح صورته هات المنتج الاول وبعدين اعمل مسح ليه ع خطوتين 
+        $product = Product::findOrFail($id)
+        $product->delete();
+        return redirect()->back()->with('success', __('general.messages.deleted'))
+-------------------------------------------------------------------------------------------------
+- How to custom the Media folder according to name of model 
+    - edit the path generator in ( config > media-library.php > 'path_generator')
+        from  => Spatie\MediaLibrary\Support\PathGenerator\DefaultPathGenerator::class,
+        to    => App\MediaLibrary\CustomPathGenerator::class,
+    
+    - create new folder app/MediaLibrary/CustomPathGenerator.php 
+        use App\Models\Product;
+        use Spatie\MediaLibrary\MediaCollections\Models\Media;
+        use Spatie\MediaLibrary\Support\PathGenerator\PathGenerator;
+
+        class CustomPathGenerator implements PathGenerator
+        {
+            public function getPath(Media $media) : string
+            {
+                $path = explode('\\', $media->model_type); //return product
+                return end($path) . '/' . $media->id . '/';//return product/1/
+            }
+
+            public function getPathForConversions(Media $media) : string
+            {
+                return $this->getPath($media) . 'conversions/';
+            }
+
+            public function getPathForResponsiveImages(Media $media): string
+            {
+                return $this->getPath($media) . 'responsive/';
+            }
+        }
+----------------------------------------------------------------------------------------------
+- edit()
+    - repeated code can we write it in parent |OR| resources\views\seller\layouts\partials\errors.blade.php and include it
+        @if ($errors->any())
+            <div class="alert alert-danger"><ul>
+                @foreach ($errors->all() as $error)<li>{{ $error }}</li>@endforeach 
+            </ul></div>
+        @endif
+    - <form method="post" action="{{ route('sellers.products.update', $product->id) }}" enctype="multipart/form-data">
+    - <img src="{{$product->getFirstMediaUrl()}}" alt="default"
+    
+---------------------------------------------------------------------------------------------- 
+- How to handel data form ?
+    - In createView.php
+
+        - (Array) <input name= "name_en" value = " {{old('name.en')}} "> 
+        - (text)  <input name= "email"   value = " {{old('email')}} ">
+
+        - (selectBox) check value of option (static)
+            - <option {{ old('status') === '1' ? 'selected' : ""}} value="">
+            - <option {{ old('status') === '0' ? 'selected' : ""}} value="">
+            OR
+            - <option @selected(old('status') === '1' ) value="">
+            - <option @selected(old('status') === '0' ) value="">
+
+        - (selectBox) check value of option (DB)
+            - <option @selected(old('category_id')==$category->id) value="{{$category->id}}">{{$category->name}}</option>
+
+        - (Text Area)
+            - <textarea> {{old('description.en')}} </textarea>
+
+    - In updateView.php ??
+        في حاله فتح الصفحه لاول مره هات من الداتا بيز كتبت انا احتف بقي باللي كتبته
+        - {{old('quantity',$product->quantity)}}
+------------------------------------------------------------------------------------------
+- Create model for verify email to user in home page
+    @auth('web')
+    @if ($user instanceof \Illuminate\Contracts\Auth\MustVerifyEmail && !$user->hasVerifiedEmail())
+??????
+
+--------------------------------------------------------------------------------------------------------------------------
+17/3/2023
+---------------
+1- How to preview image:-
+
+الصور جوه فولدر البابلك و اي فولدر تاني انا معرفش اعمله اكسس في اليورل
+php artisan storage:link ( مره واحده فقط symbolic link ) uptodate  and not dublicate storage size
+هنا هيعمل short cut( public folder in storage folder) to ( public folder)
+
+    - generate link by current domain 
+    - edit this line in congig/filesystem/ public
+            'url' => env('APP_URL').'/storage'  --> '/storage',
+
+        - first solution asset(.....)in view
+        - another solution override function geturl() in CustomUrlGenerator
+        
+        - in edit blade, show blade :-
+            <img src="{{ $product->getFirstMediaUrl('product') }}" alt="default" class="w-100 " id="image" style="cursor: pointer">
+            <img src="{{ $product->getFirstMediaUrl('product') }}" class="img-fluid rounded-start" alt="...">
+        - in create blade :-
+            <img src="{{asset('custom-images/default.png')}}" alt="default" class="w-100 " id="image" style="cursor: pointer">
+
+2- slug :-
+    صفحه التعديل عاوزه تعرف اي منتج يتعرض انا ببعت الid في ال url
+    لازم يكون في الurl علشان اقدر افتح الصفحه و دي مش حاجه سكيور  و 
+    الحل نعبر عن المنتج بحاجه تانيه غير الid  بحاجه اسمها slug
+
+    Advantages:-
+        - more user friendly ---> SEO  مهم في ال
+        - hide id from url to more secure
+    - نفس اسم المنتج بدون مسافات new-labtop 
+    - ولازم تكون unique
+    - for 2 seller with the same slugProduct 
+        - الويب سايت يعترض او
+        - يا هتزود ارقام في الاخر
+    how to create slug:-
+        - by php str_replace(" ","-","hello mai") ---->hello-mai واتاكد انه مش متكرر طول الوقت
+        - by laravel (::slug ) in documentation
+        - by package (laravel-sluggable-spatie) https://github.com/spatie/laravel-sluggable
+    when i can repeate the slug?
+        ممكن السلج تتكرر انا وحد غيري محتاج نفس الحاجه في نفس الصفحه ولكن السيرش مختلف
+        بتفرج ع ماتش الاهلي مع غانا  والزمالك مع بعض في نفس الصفحه نفس ال destenation
+    steps:-
+        - install package.
+        - integrated with translatable laravel.
+        - edit the product model
+            use HasTranslatableSlug
+            public $translatable = ['name', 'description', 'slug'];
+            getSlugOptions(): SlugOptions{ return SlugOptions::create()
+                                            ->generateSlugsFrom('name')
+                                            ->saveSlugsTo('slug')
+                                            ->usingLanguage(false);}
+
+
+        - edit migration table product by column slug --> json('slug')
+        
+            php artisan make:migration add_slug_to_products --table="products"
+                up()   -->  Schema::table -->  $table->json('slug');
+                down() -->  Schema::table -->  $table->drop('slug');
+            php artisan migrate
+        
+        - مينفعش اعمل تعديل ع منتج معندوش اسلج
+
+    problem بيرجع فرانكو :-
+        - حلها في ال product model 
+            - language(false)
+            - trait  --> use EscapeUnicodeJson
+ 
+
+----------------------------------------------------------------------------------------------------------------
+I can:-
+    - depend on slug in all url crud routes and views
+        -   by laravel (in routeFile ببعت السلاج كبرامتر لكن مازال الاساسي عندي ال id) 
+            or 
+            by package (in modalFile) (طول ما انا شغال ع جدول المنتج البريمري كي هو السلاج)
+        - modal , db, route
+
+    - or depend on id hash && slug 
+
+
+    we use slug in methods:-
+        - show(Product $product, string $slug = null) --> return view('seller.products.show', compact(['product']))
+        - edit(Product $product, string $slug = null) --> return view('seller.products.edit', compact('product', 'categories'));
+    we write it in routes instead of --> Route::resource('products', ProductsController::class);
+
+        Route::prefix('products')->name('products.')->controller(ProductsController::class)->group(function() {
+            Route::get('/', 'index')->name('index');
+            Route::post('/', 'store')->name('store');
+            Route::get('/create', 'create')->name('create');
+            Route::prefix('{product}')->group(function() {
+                Route::put('/', 'update')->name('update');
+                Route::delete('/', 'destroy')->name('destroy');
+                Route::get('show/{slug?}', 'show')->name('show');
+                Route::get('edit/{slug?}', 'edit')->name('edit');
+            });
+        });
+    <a href="{{route('sellers.products.show', ['slug' =>$product->slug, 'product' => $product->id])}}" class="btn btn-sm btn-success my-2 rounded-pill d-inline"> {{__('seller.all_products.show')}} </a>
+    <a href="{{route('sellers.products.edit', ['slug' =>$product->slug, 'product' => $product->id])}}" class="btn btn-sm btn-primary my-2  rounded-pill d-inline"> {{__('seller.all_products.edit')}} </a>
+    <form class="" action="{{route('sellers.products.destroy', $product->id)}}" method="post" class="d-inline">
+                                                   
+
+
+    - show(Product $product, string $slug = null )
+        return view('seller.products.show', compact('product') );
+
+    - edit(Product $product, string $slug = null)
+        $categories = Category::select(['id', 'name'])->where('status', CategoryEnum::ACTIVE->value)->get();
+        return view('seller.products.edit', compact($product, $categories));
+
+
+
+
+
+create UpdateProductRequest extends FormRequest
+
+    - authorize() -->  return Auth::guard('seller')->check() || Auth::guard('admin')->check();
+    - rules() --> { return [
+            "name" => ['required', 'array:ar,en'],
+            'name.*' => ['required', 'min:2', 'max:128'],
+            "purchase_price" => ['required', 'numeric', 'min:1', 'max:99999999.99'],
+            "sale_price" => ['required', 'numeric', 'min:1', 'max:99999999.99'],
+            "quantity" => ['required', 'integer', 'min:1', 'max:999'],
+            "status" => ['required', 'in:0,1'],
+            "category_id" => ['required', 'integer', 'exists:categories,id'],
+            "description" => ['required', 'array:ar,en'],
+            'description.*' => ['nullable', 'min:2', 'max:1000000'],
+            "image" => ['nullable', 'mimes:png', 'max:1024'],];}}
+
+----------------------------------------------------------------------------------------------------------------
+(edit product)
+-----------------------------
+
+- وانا بعدل علي المنتج هعمل ايه في السلاج
+- depend on slug 
+    1- slug هثبته
+    2- slug هغيره
+        - مينفعش return redirect()->back();
+        - expired url when sherable link with friends
+- or depend on id hash && slug 
+        - هتنفع return redirect()->back();
+        - وساعتها مهما غيرت في السلج لما يعمل باك هيبقي بناء ع ال id
+        - ساعتها هلغي الميثود اللي في المودل وتعديلي يكون في ال web.php
+        هبعت البرامتر هناك في الراوتس (slug, id)
+        ولما اروح اجيب المنتج اجيبه عن طريق ال id
+    
+    nested route in same resource??
+    route عاديه فك الريسورسز
+    الفرق بين ال route parameter, model binding by id, slug another column
+    خلي ال nullable في الاخر 
+    - {slug?} optional هنخليه في الاخر في الفانكشن وكمان في الاخر في الراوت 
+
+    named parameter
+    انا محتاج السلاج في ال url اللي متشاف ()
+
+    $id with encryption:-
+        1- hash       (لكن هنا بشفر مبعرفش ارجعها) (انا بس اللي عارف)
+        2- encryption اشفر الرساله محدش فاهم غير انا واللي عاوزه يفهم)(الاتصالات)) هقدر ارجعه
+
+----------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+??????????????????????????????????
+???????????????????????????????????
+???????????????????????????????????
+???????????????????????????????????
+???????????????????????????????????
+???????????????????????????????????
+
+- use HasEncryptedIds in model
+    1- view encrypt
+
+        (use name space before name of class )
+            <a href="{{route('sellers.products.show', ['slug' =>$product->slug, 'product' => \Illuminate\Support\Facades\Crypt::encryptString($product->id)])}}" class="btn btn-sm btn-success my-2 rounded-pill d-inline"> {{__('seller.all_products.show')}} </a>
+            <a href="{{route('sellers.products.edit', ['slug' =>$product->slug, 'product' => \Illuminate\Support\Facades\Crypt::encryptString($product->id)])}}" class="btn btn-sm btn-primary my-2  rounded-pill d-inline"> {{__('seller.all_products.edit')}} </a>
+            <form class="" action="{{route('sellers.products.destroy', \Illuminate\Support\Facades\Crypt::encryptString($product->id))}}" method="post" class="d-inline">
+
+        crypt::encryptString($product->id)
+
+    2- controller decrypt 
+        method in modal
+
+----------------------------------------------------
+how to make encryption and decreption:-
+----------------------------------------------------
+another method
+    UUID 36 length unique string in db بدل ما يكون اعتمادي علي id
+        - عيبه انه اسم مش رقم فالدنيا هتكون بطيئه ووقت في الداتابيز
+        - performance low in frontend
+    UULD 26 length
+------------------------------
+by php function in helper
+حوار الانكريبت والدكريبت مخالف للمودل بايندنج
+    1- هنعمل middleware في النص
+        by default (route --> RouteModelBinding --> middleware --> controller)
+        middleware
+    Or 
+    2- UUID, Id 
+        ابحث بالid 
+        مش فاهمه
+        هنحلها 
+
+-------------
+hasEncryptedId trait
+???????
+
+
+specs, multiple images, 
+
+
+------------------------------------------------------------------------------------------------------------------
+24/3/2023
+----------------------
+form repeater specs
+scopping (to do not repeate filteration)()
+- global scope https://laravel.com/docs/10.x/eloquent#global-scopes
+    - by default مطبق معاك
+    - not readability
+    - folder Scopes جمب المودل
+        ActiveScope class implements Scope
+        function Apply 
+        $builder->where('status',1)
+    - category modal
+        function هنده فيها 
+        documentation????????????????
+        protected static function booted(): void
+        {
+            static::addGlobalScope(new ActiveScope);
+        }
+
+    - category::withoutGlopalScope(ActiveScope::class)->get();
+    - category::all();
+- local scope
+    - by default لازم تنده عشان تطبقه
+    - model cataegory 
+        public function scopeActive(Builder $query): void{
+            $query->where('status',......);
+        }
+    - controller
+        ->active()->get();
+        ->active()->toSql(); //to print query
+        or laravel-depugbar package (طول ما انا شغال ديفلوبر بس واول ما يدخل برودكشن هيقف )
+        2 queries 
+            1- select * from 'sellers' where 'id' =1 limit=1  ----> middelware auth 
+            2- select 'id','name' from 'category' where status=1 ---> scope
+        
+        to control debug bar:-
+        .env APP_DEBUG=true
+             APP_DEBUG=false
+
+        1- readable table products
+            - status value
+                App\Enums\CategoryEnum::tryFrom(1)?->name
+                ? لو اللي جاي null متكلمش ال name
+            
+                $product->status ? 'active':'not active';
+
+                or helper
+                    function printEnum($enum, mixed $value){
+
+                        ucfirst(strtolower(str_replace("_", " ", $enum::tryFrom($value)?->name)));
+
+                        // ucfirst(strtolower(str_replace("_", " ", App\Enums\CategoryEnum::tryFrom($product->status)?->name)));
+                    }
+                in view
+                {{__("translate.".printEnum(App\Enums\CategoryEnum, $product->status))}}
+
+                ------------------------------------------------------------------------
+                - color status
+                    class="{{$product->status? 'text-green':'text-danger'}}"
+                    or
+                    @class([
+                        'font-bold',              //متحقق دايما
+                        'text-success'=> $product->status, //مش هيتجحقق
+                        'text-danger'=> !$product->status,     //هيتحقق
+                    ])
+--------------------------------------------------------------------------
+    seller name ملوش لازمه
+    category name 
+        category_id
+        category relation 
+
+by sql (query builder):-
+    - select, join 
+    - high preformance. (1000 query -> 1 query) without mapping
+
+by laravel (eloquent):-
+    - $product->category->name
+        - عدد الكويلاري زادت جدا بعد ما جبت اسم الكاتوجري والبريفورمنس هيقل
+        - lazy loading low preformance (n+1 problem) (1000 query -> 1001 query)
+        - solution (with method in controller --> eager loading) (1000 query -> 2 query)
+    
+    - $product= product::with('category')->where('seller_id', Auth::guard('seller')->id())->get();
+        eloquent model mapping data كل كاتيجوري نيم بصاحبها
+
+--------------------------------------------------------------------------
+show blade
+$product[0]-> remove zero
+
+show Method() in controller
+    $product->load('category') بدل with
+    with منفعتش
+    route model binding
+
+update Method() 
+payload الداتا اللي في الريكوست
+الكويري استرينج او الbody اللي فيها بيانات
+اي حاجه بتعمل راوت مودل بيندنج في الكنترورلر ده لازم يكون الايدي متشفر
+الساعه 9:30 مهمه
+تطبيق
+---------------------------------------------------------------
+status مبترجعش
+    data from request return string '1'
+    data from db return depend on datatype '1'
+            (string)$product->status الحل
+update Method
+    1- validation request
+    2- check image and update image
+        if $request->has('image')
+                remove the old image
+                insert the new image
+                update product in db 
+        else update in db only
+---------------------------------------------------------------
+alert (delete متاكد؟)
+---------------------------------
+
+ازاي امسح تابل من الميجريشن (رول باك)
+من الpending امسحه من visualstudio
+--------------------
+====================================================================================
+4/7/2023
+---------
+how to solve conflict local مهم
+ADD specs
+form repeater
+create view product
+عاوز اربط الspecname , spec value
+    - هتدخل كل اسماء السبك في جدول الspecs
+   - وقيمها فين product_specs 
+   product controller مش مهمته يهندل السبكس
+   http> services> specService.php
+   handel specs
+   assign specs to custom product
+   هباصي السبكس من الريكوست الستور للسيرفيس
+   dd($request)
+    spec_names-> indexArray
+    spec_names-> indexArray
+
+    ممكن تدخل السبكس مره واحده ده غلط
+    انا اعمل انسرت 3 مرات وكل مره اجيب ال id
+        $savedIds=[];
+    foreach ($specs as $spec){
+        Spec::create(['name'=>$spec])
+        $savedIds[] = $spec->id;
+        }
+        return $savedIds[];
+
+حوار الترانسليشن هيبقي عندي 4 inputes 
+وهظبط في الداتا بيز نوع السبكس json in 2 table
+شكل الداتا اللي محتاجها الترانسلاتر بكدج
+
+الفرونت يجبهالي جاهزه الاراي دي او انا اظبطها باك
+    [
+        'spec_names'=>[
+            0=>[
+                'en'=>'color',
+                'ar'=>'عربي',
+            ],
+
+            1=>[
+                'en'=>'material',
+                'ar'=>'الخامه',
+            ],
+        ]
+    ]
+
+    هظبطها في جدول السبك والفنكشن الجافاسكريبت
+واظبط في المودل انه ترانسليتبل ال name
+package download(laravel 9) in laravel 10 مش لازم ننزلها
+php artisan make:migration edit_name_column_in_specs_table
+$table->json('name')->after('id')->change()
+php artisan make:migration edit_value_column_in_product_spec_table
+$table->json('value')->after('product_id')->change()
+down هترجعه string('value',256)->change()
+مشكله كل ما حد ياخد نسخه من الماستر ينزل تابل موجود فعلا الميديا
+ 
+ هوه بيقرا البندينج من table migration 
+مختلفين في الاسماء بسبب الوقت 
+الحل تغير اسماء الجداول بالللي موجود في الميجريشن داتابيز في انكلود
+php artisan migrate
+// php artisan migrate rollback --step=2 هيرجعهالي استرينج
+------------------------------------------------
+ store()
+ //savespecs 
+ $product= new service او ابعتها dependency injection
+ $specIds = $specService->saveNew($request->spec_names)
+
+ array combine to اربط ال ids 
+ idDatabase =>value 
+
+ --------------
+ service
+ هحول الsavedIds to property
+
+ public function matchIds(int $productId,array $specValue){
+    forloop مهمه 10:17
+    [
+        [
+            'product_id'=>$productId,
+            'spec_id'=>$savedIds[0],
+            'value'=>$specsValues[0],
+
+        ]
+    ]
+ }
+
+ saveProductSpecs ()
+ هعمل لوب ع productSpecs 
+ازاي ادخل داتا في الجدول الوسيط الmany to many
+هدخلهم عن طريق specs or products
+attach(fixed, [variable])
+
+ابعتله البرودكت كبرامتر
+$product->specs()->attach($this->productSpecs);
+
+use trait translator in specs Model
+
+--------------------------------------
+
+هتظهرلي مشكله اني لما اجي ادخل الvalue لازم اعمل encode 
+or
+Make model to manytomany relationship
+ProductSpec  
+use trait, translatable value
+في العلاقه ->using(ProductSpec)
+
+-----------------------------------
+
+1- savespecs
+2- matchIds
+3- saveProductSpecs
+يا اما تخليهم ليهم علاقه ببعض او نربطهم ببعض
+هنا في اعتماديه بسبب ال property اللي في السرفيس
+هعمل return $this; في كل الميثود
+---------------------------------------
+او تغير الفانكشن تبقي بترجع حاجه واحده
+هلغي ال 4this ---> local parameterبدالها 
+static function
+
+seller
+الغي ال chaining ةثفاخي 
+الصوره تصغر 
+multiple image
+select2 with insert name
+left to right
+show view(specs , comment(دخل كذا واحده استاتيك بالداتا بيز))
+
+admin dashboard
+categories media
+specs 
+cities 
+regions 
+
+
+
