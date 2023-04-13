@@ -1222,22 +1222,22 @@ php artisan storage:link ( مره واحده فقط symbolic link ) uptodate  an
     لازم يكون في الurl علشان اقدر افتح الصفحه و دي مش حاجه سكيور  و 
     الحل نعبر عن المنتج بحاجه تانيه غير الid  بحاجه اسمها slug
 
-    Advantages:-
+    - Advantages:-
         - more user friendly ---> SEO  مهم في ال
         - hide id from url to more secure
-    - نفس اسم المنتج بدون مسافات new-labtop 
-    - ولازم تكون unique
-    - for 2 seller with the same slugProduct 
-        - الويب سايت يعترض او
-        - يا هتزود ارقام في الاخر
-    how to create slug:-
+        - نفس اسم المنتج بدون مسافات new-labtop 
+        - ولازم تكون unique
+        - for 2 seller with the same slugProduct 
+            - الويب سايت يعترض او
+            - يا هتزود ارقام في الاخر
+    - how to create slug:-
         - by php str_replace(" ","-","hello mai") ---->hello-mai واتاكد انه مش متكرر طول الوقت
         - by laravel (::slug ) in documentation
         - by package (laravel-sluggable-spatie) https://github.com/spatie/laravel-sluggable
-    when i can repeate the slug?
+    - when i can repeate the slug?
         ممكن السلج تتكرر انا وحد غيري محتاج نفس الحاجه في نفس الصفحه ولكن السيرش مختلف
         بتفرج ع ماتش الاهلي مع غانا  والزمالك مع بعض في نفس الصفحه نفس ال destenation
-    steps:-
+    - steps:-
         - install package.
         - integrated with translatable laravel.
         - edit the product model
@@ -1258,150 +1258,167 @@ php artisan storage:link ( مره واحده فقط symbolic link ) uptodate  an
         
         - مينفعش اعمل تعديل ع منتج معندوش اسلج
 
-    problem بيرجع فرانكو :-
+    - problem بيرجع فرانكو :-
         - حلها في ال product model 
             - language(false)
             - trait  --> use EscapeUnicodeJson
  
+    - The difference between:-
+        {product:slug} modelBinding  معناها شوف السلاج انه برايمري كي في المودل بيندينج | معتمد  علي السلاج في الداتابيز لازم يتبعت 
+        {product} modelBinding معتمد علي الايدي في الداتابيز لازم يتبعت
+        {id} راوت برامتر عادي
 
-----------------------------------------------------------------------------------------------------------------
-I can:-
-    - depend on slug in all url crud routes and views
-        -   by laravel (in routeFile ببعت السلاج كبرامتر لكن مازال الاساسي عندي ال id) 
-            or 
-            by package (in modalFile) (طول ما انا شغال ع جدول المنتج البريمري كي هو السلاج)
-        - modal , db, route
+    - The steps can be:- (modal , db, route) slug Constant
+        1- depend on slug (primary key) in all url crud routes and views && send id as parameter 
+            - by package (in modalFile) (طول ما انا شغال ع جدول المنتج البريمري كي هو السلاج)
+                1- In sellers.php   
+                        Route::get('test/{slug}/{id}, function($slug, $id){
+                            $product = Product::findOrFail($id);
+                            echo $product->name;
+                        });
+                2- and in Model > Product.php  
+                        public function getRouteKeyName(){
+                            return 'slug';
+                        } 
+                        الحل ده هوه الافضل لان قصه اللاهىيهىل لل مودل وليس في الراوت 
 
-    - or depend on id hash && slug 
+            - or by laravel in route file
+                {product:slug}/{id} modelBinding  معناها شوف السلاج انه برايمري كي في المودل بيندينج | معتمد  علي السلاج في الداتابيز لازم يتبعت 
 
+            - note:-
+                - وانا بعدل علي المنتج هعمل ايه في السلاج
+                - depend on slug as primary key
+                    1- slug هثبته
+                    2- slug هغيره
+                        - مينفعش return redirect()->back();
+                        - expired url when sherable link with friends
 
-    we use slug in methods:-
-        - show(Product $product, string $slug = null) --> return view('seller.products.show', compact(['product']))
-        - edit(Product $product, string $slug = null) --> return view('seller.products.edit', compact('product', 'categories'));
-    we write it in routes instead of --> Route::resource('products', ProductsController::class);
+        2- by route file هكتب بس ( ببعت السلاج كبرامتر لكن مازال الاساسي عندي ال id) 
+                - Nested route in same resource controller, route عاديه فك الريسورسز
+                - We write it in routes instead of --> Route::resource('products', ProductsController::class);
+                    Route::prefix('products')->name('products.')->controller(ProductsController::class)->group(function()
+                        Route::get('/', 'index')->name('index');
+                        Route::post('/', 'store')->name('store');
+                        Route::get('/create', 'create')->name('create');
+                        Route::prefix('{product}')->group(function() {
+                            Route::put('/', 'update')->name('update');
+                            Route::delete('/', 'destroy')->name('destroy');
+                            Route::get('show/{slug?}', 'show')->name('show');
+                            Route::get('edit/{slug?}', 'edit')->name('edit');
+                - Note:-
+                    - الفرق بين ال route parameter, model binding by id, slug another column
+                    - خلي ال nullable في الاخر 
+                    - {slug?} optional هنخليه في الاخر في الفانكشن وكمان في الاخر في الراوت 
 
-        Route::prefix('products')->name('products.')->controller(ProductsController::class)->group(function() {
-            Route::get('/', 'index')->name('index');
-            Route::post('/', 'store')->name('store');
-            Route::get('/create', 'create')->name('create');
-            Route::prefix('{product}')->group(function() {
-                Route::put('/', 'update')->name('update');
-                Route::delete('/', 'destroy')->name('destroy');
-                Route::get('show/{slug?}', 'show')->name('show');
-                Route::get('edit/{slug?}', 'edit')->name('edit');
-            });
-        });
-    <a href="{{route('sellers.products.show', ['slug' =>$product->slug, 'product' => $product->id])}}" class="btn btn-sm btn-success my-2 rounded-pill d-inline"> {{__('seller.all_products.show')}} </a>
-    <a href="{{route('sellers.products.edit', ['slug' =>$product->slug, 'product' => $product->id])}}" class="btn btn-sm btn-primary my-2  rounded-pill d-inline"> {{__('seller.all_products.edit')}} </a>
-    <form class="" action="{{route('sellers.products.destroy', $product->id)}}" method="post" class="d-inline">
-                                                   
+                - The methods:-
+                    - show(Product $product, string $slug = null) --> return view('seller.products.show', compact(['product']))
+                    - edit(Product $product, string $slug = null) --> return view('seller.products.edit', compact('product', 'categories'));
+                        انا محتاج السلاج في اللينكات اللي هشوفها
+                        الترتيب اللي هبعته كبرامتر هنا في الميثود مهم يكون مطابق للراوتس
+                
+                - The View:-
+                    - <a href="{{route('sellers.products.show', ['slug' =>$product->slug, 'product' => $product->id])}}" class="btn btn-sm btn-success my-2 rounded-pill d-inline"> {{__('seller.all_products.show')}} </a>
+                    - <a href="{{route('sellers.products.edit', ['slug' =>$product->slug, 'product' => $product->id])}}" class="btn btn-sm btn-primary my-2  rounded-pill d-inline"> {{__('seller.all_products.edit')}} </a>
+                    - <form class="" action="{{route('sellers.products.destroy', $product->id)}}" method="post" class="d-inline">
+                                            
+                - show(Product $product, string $slug = null )
+                    return view('seller.products.show', compact('product') );
 
+                - edit(Product $product, string $slug = null)
+                    $categories = Category::select(['id', 'name'])->where('status', CategoryEnum::ACTIVE->value)->get();
+                    return view('seller.products.edit', compact($product, $categories));
 
-    - show(Product $product, string $slug = null )
-        return view('seller.products.show', compact('product') );
+                - Product/UpdateProductRequest:-
+                    - authorize() -->  return Auth::guard('seller')->check() || Auth::guard('admin')->check();
+                    - rules() --> { return [
+                            "name" => ['required', 'array:ar,en'],
+                            'name.*' => ['required', 'min:2', 'max:128'],
+                            "purchase_price" => ['required', 'numeric', 'min:1', 'max:99999999.99'],
+                            "sale_price" => ['required', 'numeric', 'min:1', 'max:99999999.99'],
+                            "quantity" => ['required', 'integer', 'min:1', 'max:999'],
+                            "status" => ['required', 'in:0,1'],
+                            "category_id" => ['required', 'integer', 'exists:categories,id'],
+                            "description" => ['required', 'array:ar,en'],
+                            'description.*' => ['nullable', 'min:2', 'max:1000000'],
+                            "image" => ['nullable', 'mimes:png', 'max:1024'],];}}
+                
+                
+        3- or depend on id hash && slug Constant
+            - هتنفع return redirect()->back();
+            - وساعتها مهما غيرت في السلج لما يعمل باك هيبقي بناء ع ال id
+            - ساعتها هلغي الميثود اللي في المودل وتعديلي يكون في ال web.php
+                هبعت البرامتر هناك في الراوتس (slug, id)
+                ولما اروح اجيب المنتج اجيبه عن طريق ال id
+            - named parameter
+            - $id with encryption:-
+                1- hash       (لكن هنا بشفر مبعرفش ارجعها) (انا بس اللي عارف)
+                2- encryption اشفر الرساله محدش فاهم غير انا واللي عاوزه يفهم)(الاتصالات)) هقدر ارجعه
+            
+            - Steps how to make encryption and decreption:-
+                1- manual
+                    - view responsible for encrypting id 
+                        (crypt::encryptString($product->id))
+                        (use name space before name of class )
+                        
+                        <a href="{{route('sellers.products.show', ['slug' =>$product->slug, 'product' => \Illuminate\Support\Facades\Crypt::encryptString($product->id)])}}" class="btn btn-sm btn-success my-2 rounded-pill d-inline"> {{__('seller.all_products.show')}} </a>
+                        <a href="{{route('sellers.products.edit', ['slug' =>$product->slug, 'product' => \Illuminate\Support\Facades\Crypt::encryptString($product->id)])}}" class="btn btn-sm btn-primary my-2  rounded-pill d-inline"> {{__('seller.all_products.edit')}} </a>
+                        <form class="" action="{{route('sellers.products.destroy', \Illuminate\Support\Facades\Crypt::encryptString($product->id))}}" method="post" class="d-inline">
 
-    - edit(Product $product, string $slug = null)
-        $categories = Category::select(['id', 'name'])->where('status', CategoryEnum::ACTIVE->value)->get();
-        return view('seller.products.edit', compact($product, $categories));
-
-
-
-
-
-create UpdateProductRequest extends FormRequest
-
-    - authorize() -->  return Auth::guard('seller')->check() || Auth::guard('admin')->check();
-    - rules() --> { return [
-            "name" => ['required', 'array:ar,en'],
-            'name.*' => ['required', 'min:2', 'max:128'],
-            "purchase_price" => ['required', 'numeric', 'min:1', 'max:99999999.99'],
-            "sale_price" => ['required', 'numeric', 'min:1', 'max:99999999.99'],
-            "quantity" => ['required', 'integer', 'min:1', 'max:999'],
-            "status" => ['required', 'in:0,1'],
-            "category_id" => ['required', 'integer', 'exists:categories,id'],
-            "description" => ['required', 'array:ar,en'],
-            'description.*' => ['nullable', 'min:2', 'max:1000000'],
-            "image" => ['nullable', 'mimes:png', 'max:1024'],];}}
-
-----------------------------------------------------------------------------------------------------------------
-(edit product)
------------------------------
-
-- وانا بعدل علي المنتج هعمل ايه في السلاج
-- depend on slug 
-    1- slug هثبته
-    2- slug هغيره
-        - مينفعش return redirect()->back();
-        - expired url when sherable link with friends
-- or depend on id hash && slug 
-        - هتنفع return redirect()->back();
-        - وساعتها مهما غيرت في السلج لما يعمل باك هيبقي بناء ع ال id
-        - ساعتها هلغي الميثود اللي في المودل وتعديلي يكون في ال web.php
-        هبعت البرامتر هناك في الراوتس (slug, id)
-        ولما اروح اجيب المنتج اجيبه عن طريق ال id
-    
-    nested route in same resource??
-    route عاديه فك الريسورسز
-    الفرق بين ال route parameter, model binding by id, slug another column
-    خلي ال nullable في الاخر 
-    - {slug?} optional هنخليه في الاخر في الفانكشن وكمان في الاخر في الراوت 
-
-    named parameter
-    انا محتاج السلاج في ال url اللي متشاف ()
-
-    $id with encryption:-
-        1- hash       (لكن هنا بشفر مبعرفش ارجعها) (انا بس اللي عارف)
-        2- encryption اشفر الرساله محدش فاهم غير انا واللي عاوزه يفهم)(الاتصالات)) هقدر ارجعه
-
-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------
-??????????????????????????????????
-???????????????????????????????????
-???????????????????????????????????
-???????????????????????????????????
-???????????????????????????????????
-???????????????????????????????????
-
-- use HasEncryptedIds in model
-    1- view encrypt
-
-        (use name space before name of class )
-            <a href="{{route('sellers.products.show', ['slug' =>$product->slug, 'product' => \Illuminate\Support\Facades\Crypt::encryptString($product->id)])}}" class="btn btn-sm btn-success my-2 rounded-pill d-inline"> {{__('seller.all_products.show')}} </a>
-            <a href="{{route('sellers.products.edit', ['slug' =>$product->slug, 'product' => \Illuminate\Support\Facades\Crypt::encryptString($product->id)])}}" class="btn btn-sm btn-primary my-2  rounded-pill d-inline"> {{__('seller.all_products.edit')}} </a>
-            <form class="" action="{{route('sellers.products.destroy', \Illuminate\Support\Facades\Crypt::encryptString($product->id))}}" method="post" class="d-inline">
-
-        crypt::encryptString($product->id)
-
-    2- controller decrypt 
-        method in modal
-
-----------------------------------------------------
-how to make encryption and decreption:-
-----------------------------------------------------
-another method
-    UUID 36 length unique string in db بدل ما يكون اعتمادي علي id
-        - عيبه انه اسم مش رقم فالدنيا هتكون بطيئه ووقت في الداتابيز
-        - performance low in frontend
-    UULD 26 length
-------------------------------
-by php function in helper
-حوار الانكريبت والدكريبت مخالف للمودل بايندنج
-    1- هنعمل middleware في النص
-        by default (route --> RouteModelBinding --> middleware --> controller)
-        middleware
-    Or 
-    2- UUID, Id 
-        ابحث بالid 
-        مش فاهمه
-        هنحلها 
-
--------------
-hasEncryptedId trait
-???????
+                    - Controller responsible for decrypting id   
+                        method in modal 
+                        Crypt::decryptString($request->token)
 
 
-specs, multiple images, 
+                2- another method
+                    a- UUID universal unique alph numeric identifiers
+                        - 36 length unique string in db
+                        - بدل ما يكون اعتمادي علي id هيكون معتمد علي uuid
+                        - عيبه انه اسم مش رقم فالدنيا هتكون بطيئه ووقت في الداتابيز
+                        - performance low in frontend
+                    steps:-
+                        - in model protected $appends=['UUID'];
+                        - in db add column in product table.
+                        - protected function uuid(): Attribute {
+                                return Attribute::make(
+                                    set: fnnction (string $value) { 
+                                        return 'ok';
+                                    }
+                                );}    
+                        - add it in fillable array
+                    b- ULID
+                        - 26 length unique string in db
+                
+                Note:- 
+                    - حوار الانكريبت والدكريبت بدون جدول فب الداتابيز مخالف للمودل بايندنج
+                        1- هنعمل middleware في النص middleware وفشل
+                                - php artisan make:middleware x
+                                - add it in kernal
+                                - ->name('show')->midelware('x')
+                            - سبب الفشل -> by default (route --> RouteModelBinding --> middleware --> controller)
+                       
+                        2- create two UUID, Id columns in db
+                            Id  هبحث بيه ال modelBinding
+                            هيغير الداتاتايب للاي دي هيبقي استرينج ومش برايمري كي
+                            UUID هعمل بيه التشفير
 
+                3- make helper function manual ( php native )  
 
+                4- customize the resolution route
+                https://stackoverflow.com/questions/71168670/how-to-pass-encrypted-id-as-route-parameter-in-laravel-route-model-binding
+                
+                    - Add in routeService provider to control model binding
+                        method boot()
+                        Route::bind('user', function ($encryptedId) {
+                            return User::where('id', Crypt::decryptString ($encryptedId))->firstOrFail();
+                        });
+                        بس مش انسب حل مع كل مودل هيستخدم الانكربت هضطر اكرر السطرين دول لكل مودل جديد
+                                    
+                
+                    - Create HasEncryptedIds and Use this trait in model
+                        resolveRouteBinding($encryptedId, $field = null) --> 
+                            return $this->where('id', Crypt::decryptString($encryptedId))->firstOrFail();
+                            لو انت هتبعت ال url متشفر استخدم التريت ده
+                            
 ------------------------------------------------------------------------------------------------------------------
 24/3/2023
 ----------------------
@@ -1521,7 +1538,7 @@ alert (delete متاكد؟)
 
 ازاي امسح تابل من الميجريشن (رول باك)
 من الpending امسحه من visualstudio
---------------------
+
 ====================================================================================
 4/7/2023
 ---------
@@ -1642,8 +1659,11 @@ use trait, translatable value
 هلغي ال 4this ---> local parameterبدالها 
 static function
 
-seller
-الغي ال chaining ةثفاخي 
+
+tasks:- 
+
+in seller 
+الغي ال chaining methods
 الصوره تصغر 
 multiple image
 select2 with insert name
