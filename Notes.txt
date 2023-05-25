@@ -879,7 +879,9 @@ translation:
 crud product in seller:- 
 ------------------------------------------------------
     1- php artisan make:controller ProductsController --resource
-    2- Route::prefix('sellers')->name('sellers.')->middleware(['auth:seller', 'verified:seller'])->group(function() { Route::resource('products', ProductsController::class);});
+    2- Route::prefix('sellers')->name('sellers.')
+        ->middleware(['auth:seller', 'verified:seller'])->group(function() { 
+        Route::resource('products', ProductsController::class);});
     3- In ProuctsController 
         - index()
             $products = Product::where('seller_id', Auth::guard('seller')->id())->get()
@@ -992,9 +994,8 @@ crud product in seller:-
                 @endpush
 
 ----------------------------------------------------------------------------------------------------
-how to remove tailwind from the all project
+how to remove tailwind from the all project (task)
 ----------------------------------------------------------------------------------------------------
-    
     - store()
         - validation (form request)       
             - C:\xampp\htdocs\studing\ecommerce-b2\app\Http\Requests\Product\StoreProductRequest.php
@@ -1007,49 +1008,49 @@ how to remove tailwind from the all project
             - add specs (الرامات البطاريه ......).
 
         - image uploaded by two methods:-
-                - laravel (المنحه)
-                - package images (polymorphic relationship)
-                    - بيكون فيه جدول للميديا وببقي محتاج اسم الجدول صاحب الصوره وكمان ال id(modal_type, modal_id)
-                    - images table id, name, type (تبع مين user, seller) , type-id (user-id)
-                            - Disks meaning :-
-                                --> disk الوندز متقسم عشان التنظيم والداتا متروحش لو عملت ويندز جديد
-                                --> C:\xampp\htdocs\studing\ecommerce-b2\config\filesystems.php
-                                
-                                    - local  ---> not (accessable اقدر اوصلها باليووارال)(ملف جيسون و عقد و.....)     laravel store in it (by default)
-                                    - public ---> accessable by url (اي حد يقدر يعملها اكسس)     package store in it (by default)
-                                    - s3 (زي الجوجل درايف محفوظه وبالفلوس من امازون) هشتري ارقام اللي في الاراي وكمان اعرف اللارفل ازاي بترفعه 
-                                        زي جوجل درايف اي نوع من انواع الفيلات cloud storage to aws(amazon web service paid)
+            - laravel (المنحه)
+            - package images (polymorphic relationship)
+                - بيكون فيه جدول للميديا وببقي محتاج اسم الجدول صاحب الصوره وكمان ال id(modal_type, modal_id)
+                - images table id, name, type (تبع مين user, seller) , type-id (user-id)
+                        - Disks meaning :-
+                            --> disk الوندز متقسم عشان التنظيم والداتا متروحش لو عملت ويندز جديد
+                            --> C:\xampp\htdocs\studing\ecommerce-b2\config\filesystems.php
+                            
+                                - local  ---> not (accessable اقدر اوصلها باليووارال)(ملف جيسون و عقد و.....)     laravel store in it (by default)
+                                - public ---> accessable by url (اي حد يقدر يعملها اكسس)     package store in it (by default)
+                                - s3 (زي الجوجل درايف محفوظه وبالفلوس من امازون) هشتري ارقام اللي في الاراي وكمان اعرف اللارفل ازاي بترفعه 
+                                    زي جوجل درايف اي نوع من انواع الفيلات cloud storage to aws(amazon web service paid)
 
-                   - laravel media library  https://spatie.be/docs/laravel-medialibrary
-                        - خدبالك انها تكون اخر version
-                        - composer require "spatie/laravel-medialibrary:^10.2"
-                        - php artisan vendor:publish --provider="Spatie\MediaLibrary\MediaLibraryServiceProvider" --tag="migrations"
-                        - php artisan migrate
-                        - php artisan vendor:publish --provider="Spatie\MediaLibrary\MediaLibraryServiceProvider" --tag="config"
-                    - Automatic will appear this file
-                        - C:\xampp\htdocs\studing\ecommerce-b2\config\media-library.php
-                    - Prepearing modal
-                        - implements HasMedia interface
-                        - use InteractsWithMedia trait
-                        - use function registerMediaConversions() method to crop image
+                - laravel media library  https://spatie.be/docs/laravel-medialibrary
+                    - خدبالك انها تكون اخر version
+                    - composer require "spatie/laravel-medialibrary:^10.2"
+                    - php artisan vendor:publish --provider="Spatie\MediaLibrary\MediaLibraryServiceProvider" --tag="migrations"
+                    - php artisan migrate
+                    - php artisan vendor:publish --provider="Spatie\MediaLibrary\MediaLibraryServiceProvider" --tag="config"
+                - Automatic will appear this file
+                    - C:\xampp\htdocs\studing\ecommerce-b2\config\media-library.php
+                - Prepearing modal
+                    - implements HasMedia interface
+                    - use InteractsWithMedia trait
+                    - use function registerMediaConversions() method to crop image
 
-                    - Associate media
-                        - ProductController
-                        - $request->validated() --> هيرجعلي اللي موجود في الfillable
-                                                    حتي لو انا مدخل الصوره في الفيو والا كاني شايفها
+                - Associate media
+                    - ProductController
+                    - $request->validated() --> هيرجعلي اللي موجود في الfillable
+                                                حتي لو انا مدخل الصوره في الفيو والا كاني شايفها
 
-                    - store(StoreProductRequest $request)
-                        1- generate code
-                            $code = genProductCode();
-                        2- validation  هيرجعلي اللي موجود في الfillable حتي لو انا مدخل الصوره في الفيو والا كاني شايفها
-                        3- $product = Product::create(array_merge($request->validated(), 
-                            ['code' => $code,
-                            'seller_id' => Auth::guard('seller')->id() //محتاجها وانا بعمل login]));
-                            $product->addMediaFromRequest('image')->toMediaCollection('products'); //image = name of key  //CollectionColumn products
-                            return redirect()->route('seller.products.index');}
-
-
+                - store(StoreProductRequest $request)
+                    1- generate code
+                        $code = genProductCode();
+                    2- validation  هيرجعلي اللي موجود في الfillable حتي لو انا مدخل الصوره في الفيو والا كاني شايفها
+                    3- $product = Product::create(array_merge($request->validated(), 
+                        ['code' => $code,
+                        'seller_id' => Auth::guard('seller')->id() //محتاجها وانا بعمل login]));
+                        $product->addMediaFromRequest('image')->toMediaCollection('products'); //image = name of key  //CollectionColumn products
+                        return redirect()->route('seller.products.index');}
+--------------------------------------------------------------------------------------------------------------------------
 - How to make success alart ?
+---------------------------------
     - sweet alert script handel https://sweetalert2.github.io/#usage         
         1- In parent view 
             <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
@@ -1164,10 +1165,11 @@ RoutePrameter:-
             </ul></div>
         @endif
     - <form method="post" action="{{ route('sellers.products.update', $product->id) }}" enctype="multipart/form-data">
-    - <img src="{{$product->getFirstMediaUrl()}}" alt="default"
+    - <img src="{{$product->getFirstMediaUrl('products')}}" alt="default"
     
 ---------------------------------------------------------------------------------------------- 
 - How to handel data form ?
+----------------------------
     - In createView.php
 
         - (Array) <input name= "name_en" value = " {{old('name.en')}} "> 
@@ -1194,6 +1196,61 @@ RoutePrameter:-
     @auth('web')
     @if ($user instanceof \Illuminate\Contracts\Auth\MustVerifyEmail && !$user->hasVerifiedEmail())
 ??????
+  <!-- Modal Verify Email -->
+    @auth('web')
+        @if ($user instanceof \Illuminate\Contracts\Auth\MustVerifyEmail && !$user->hasVerifiedEmail())
+
+            <div class="modal flex-c-m m-auto w-50 trans-04 modal-verify-email" id="modal_verify_email">
+                <div class="container p-t-80 ">
+                    <div class="bg-light m-auto bor10 p-lr-70 p-t-55 p-b-70 p-lr-15-lg w-full-md">
+
+                        <button class="flex-c-m btn trans-04 mb-4 close-modal-email-verify" onclick="closeModal()">
+                            <img src="{{ asset('frontend-assets/images/icons/icon-close2.png') }}" alt="CLOSE">
+                        </button>
+
+                        <div class="mb-4 text-sm text-gray-600 dark:text-gray-400">
+                            {{ __('user.auth.verify_email.verify_email_head') }}
+                        </div>
+
+                        @if (session('status') == 'verification-link-sent')
+                            <div class="mb-4 font-medium text-sm text-green-600 dark:text-green-400">
+                                {{ __('user.auth.verify_email.verify_email_confrmation') }}
+                            </div>
+                        @endif
+                        <form method="POST" action="{{ route('users.verification.send') }}">
+                            @csrf
+
+                            <!-- Logo desktop -->
+                            <a href="#" class="logo p-t-20">
+                                <img src="{{ asset('frontend-assets/images/icons/logo-01.png') }}" alt="IMG-LOGO" style="margin: auto; padding-bottom: 20px;">
+                            </a>
+
+                            <button class="flex-c-m stext-101 cl0 w-50 bg3 bor1 hov-btn3 p-lr-15 trans-04 pointer mx-auto m-t-6">
+                                {{__('user.auth.verify_email.confirm')}}
+                            </button>
+                        </form>
+                        <form method="POST" action="{{ route('users.logout') }}">
+                            @csrf
+
+                            <button class="flex-c-m stext-101 cl0 w-50 bg3 bor1 hov-btn3 p-lr-15 trans-04 pointer mx-auto m-t-6">
+                                {{__('user.auth.verify_email.logout')}}
+                            </button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        @endif
+    @endauth
+<script>
+    function closeModal(){
+        document.getElementById("modal_verify_email").style.opacity = "0";
+    }
+    $('body').click(function (event){
+        if(!$(event.target).closest('#modal_verify_email').length && !$(event.target).is('#modal_verify_email')) {
+            $("#modal_verify_email").hide();
+        }
+    });
+</script>
 
 --------------------------------------------------------------------------------------------------------------------------
 17/3/2023
@@ -1212,8 +1269,8 @@ php artisan storage:link ( مره واحده فقط symbolic link ) uptodate  an
         - another solution override function geturl() in CustomUrlGenerator
         
         - in edit blade, show blade :-
-            <img src="{{ $product->getFirstMediaUrl('product') }}" alt="default" class="w-100 " id="image" style="cursor: pointer">
-            <img src="{{ $product->getFirstMediaUrl('product') }}" class="img-fluid rounded-start" alt="...">
+            <img src="{{ $product->getFirstMediaUrl('products') }}" alt="default" class="w-100 " id="image" style="cursor: pointer">
+            <img src="{{ $product->getFirstMediaUrl('products') }}" class="img-fluid rounded-start" alt="...">
         - in create blade :-
             <img src="{{asset('custom-images/default.png')}}" alt="default" class="w-100 " id="image" style="cursor: pointer">
 
@@ -1321,12 +1378,29 @@ php artisan storage:link ( مره واحده فقط symbolic link ) uptodate  an
                     - <a href="{{route('sellers.products.edit', ['slug' =>$product->slug, 'product' => $product->id])}}" class="btn btn-sm btn-primary my-2  rounded-pill d-inline"> {{__('seller.all_products.edit')}} </a>
                     - <form class="" action="{{route('sellers.products.destroy', $product->id)}}" method="post" class="d-inline">
                                             
-                - show(Product $product, string $slug = null )
-                    return view('seller.products.show', compact('product') );
-
-                - edit(Product $product, string $slug = null)
-                    $categories = Category::select(['id', 'name'])->where('status', CategoryEnum::ACTIVE->value)->get();
-                    return view('seller.products.edit', compact($product, $categories));
+                - Show Method
+                    - show (Product $product, string $slug = null )
+                        return view('seller.products.show', compact('product') );
+                    - view (resources\views\seller\products\show.blade.php)
+                        <img src="{{ $product->getFirstMediaUrl('products') }}"
+                        <td class="text-center">{{ $product->id }}</td>          
+                        <td class="text-center">{{ $product->getTranslation('name', 'en') }}</td>
+                        <td class="text-center">{{ $product->getTranslation('name', 'ar') }}</td>
+                        <td class="text-center">{{ $product->getTranslation('description', 'en') }}</td>
+                        <td class="text-center">{{ $product->getTranslation('description', 'ar') }}</td>
+                        <td class="text-center">{{ $product->code }}</td>
+                        <td class="text-center">{{ $product->sale_price_with_currency() }}</td>
+                        <td class="text-center">{{ $product->purchase_price_with_currency() }}</td>      
+                        <td class="text-center">{{ $profit = $product->sale_price - $product->purchase_price }} EGP
+                        <td class="text-center">{{ $product->quantity }}</td>
+                        <td class="text-center">{{ $profit * $product->quantity }}</td>
+                        <td class="text-center">{{ $product->status }}</td>
+                        <td class="text-center"> {{ $product->category->name }} </td>
+                                     
+                - Edit Method
+                    edit(Product $product, string $slug = null)
+                        $categories = Category::select(['id', 'name'])->where('status', CategoryEnum::ACTIVE->value)->get();
+                        return view('seller.products.edit', compact($product, $categories));
 
                 - Product/UpdateProductRequest:-
                     - authorize() -->  return Auth::guard('seller')->check() || Auth::guard('admin')->check();
@@ -1422,126 +1496,212 @@ php artisan storage:link ( مره واحده فقط symbolic link ) uptodate  an
 ------------------------------------------------------------------------------------------------------------------
 24/3/2023
 ----------------------
-form repeater specs
-scopping (to do not repeate filteration)()
-- global scope https://laravel.com/docs/10.x/eloquent#global-scopes
-    - by default مطبق معاك
-    - not readability
-    - folder Scopes جمب المودل
-        ActiveScope class implements Scope
-        function Apply 
-        $builder->where('status',1)
-    - category modal
-        function هنده فيها 
-        documentation????????????????
-        protected static function booted(): void
-        {
-            static::addGlobalScope(new ActiveScope);
-        }
-
-    - category::withoutGlopalScope(ActiveScope::class)->get();
-    - category::all();
-- local scope
-    - by default لازم تنده عشان تطبقه
-    - model cataegory 
-        public function scopeActive(Builder $query): void{
-            $query->where('status',......);
-        }
-    - controller
-        ->active()->get();
-        ->active()->toSql(); //to print query
-        or laravel-depugbar package (طول ما انا شغال ديفلوبر بس واول ما يدخل برودكشن هيقف )
-        2 queries 
-            1- select * from 'sellers' where 'id' =1 limit=1  ----> middelware auth 
-            2- select 'id','name' from 'category' where status=1 ---> scope
-        
-        to control debug bar:-
-        .env APP_DEBUG=true
-             APP_DEBUG=false
-
-        1- readable table products
-            - status value
-                App\Enums\CategoryEnum::tryFrom(1)?->name
-                ? لو اللي جاي null متكلمش ال name
-            
-                $product->status ? 'active':'not active';
-
-                or helper
-                    function printEnum($enum, mixed $value){
-
-                        ucfirst(strtolower(str_replace("_", " ", $enum::tryFrom($value)?->name)));
-
-                        // ucfirst(strtolower(str_replace("_", " ", App\Enums\CategoryEnum::tryFrom($product->status)?->name)));
-                    }
-                in view
-                {{__("translate.".printEnum(App\Enums\CategoryEnum, $product->status))}}
-
-                ------------------------------------------------------------------------
-                - color status
-                    class="{{$product->status? 'text-green':'text-danger'}}"
-                    or
-                    @class([
-                        'font-bold',              //متحقق دايما
-                        'text-success'=> $product->status, //مش هيتجحقق
-                        'text-danger'=> !$product->status,     //هيتحقق
-                    ])
---------------------------------------------------------------------------
-    seller name ملوش لازمه
-    category name 
-        category_id
-        category relation 
-
-by sql (query builder):-
-    - select, join 
-    - high preformance. (1000 query -> 1 query) without mapping
-
-by laravel (eloquent):-
-    - $product->category->name
-        - عدد الكويلاري زادت جدا بعد ما جبت اسم الكاتوجري والبريفورمنس هيقل
-        - lazy loading low preformance (n+1 problem) (1000 query -> 1001 query)
-        - solution (with method in controller --> eager loading) (1000 query -> 2 query)
+- Form repeater jquery for specs table
+- Scopping ( didnot repeate filteration)()
     
-    - $product= product::with('category')->where('seller_id', Auth::guard('seller')->id())->get();
-        eloquent model mapping data كل كاتيجوري نيم بصاحبها
+    1- Global Scope
+        - https://laravel.com/docs/10.x/eloquent#global-scopes
+        - Global scopes allow you to add constraints to all queries for a given model.
+        - Laravel's own soft delete functionality utilizes global scopes to only retrieve "non-deleted" models from the database.
+        - Writing your own global scopes can provide a convenient, easy way to make sure every query for a given model receives certain constraints.
 
---------------------------------------------------------------------------
-show blade
-$product[0]-> remove zero
+        - باول ما بكتبه علي المودل اي كنترولر هيستخدم المودل ده هيطبق عليه اتوماتيك
+        - by default مطبق معاك
+        - not readability لانه مش بيكون واضح في الكنترولر لازم ادور في المودل عشان اشوف الاسكوب
+        - تقدر تطبقه علي اكتر من مودل في نفس الوقت
+        
+        - Steps:-
+            - Folder Scopes جمب المودل
+                - Class ActiveScope implements Scope
+                - public function apply(Builder $builder, Model $model):void
+                    $builder->where('created_at', '<', now()->subYears(2000));
 
-show Method() in controller
-    $product->load('category') بدل with
-    with منفعتش
-    route model binding
+            - Category Model
+                - protected static function booted(): void
+                    static::addGlobalScope(new ActiveScope)
+                - بكده كل الكويري هتطبق عليها الفلتريشن دي في الكنترورلر
+            - Controller
+                - Category::all();
+            - لو عاوزه ميطبقش الاسكوب
+                category::withoutGlopalScope(ActiveScope::class)->get();
+    
+    2- Local Scope
+        - by default لازم تنده عشان تطبقه
+        - خاصه بالمودل اللي هيتحط فيها فقط
+        - In model category 
+            لازم تبدا بكلمه سكوب
 
-update Method() 
-payload الداتا اللي في الريكوست
-الكويري استرينج او الbody اللي فيها بيانات
-اي حاجه بتعمل راوت مودل بيندنج في الكنترورلر ده لازم يكون الايدي متشفر
-الساعه 9:30 مهمه
-تطبيق
----------------------------------------------------------------
-status مبترجعش
-    data from request return string '1'
-    data from db return depend on datatype '1'
-            (string)$product->status الحل
-update Method
-    1- validation request
-    2- check image and update image
-        if $request->has('image')
-                remove the old image
-                insert the new image
-                update product in db 
-        else update in db only
----------------------------------------------------------------
-alert (delete متاكد؟)
----------------------------------
+            use App\Enums\CategoryEnum;
+            use Illuminate\Database\Eloquent\Builder;
+            public function scopeActive(Builder $query):void {
+                $query->where('status', CategoryEnum::ACTIVE->value);}
+        
+        - In controller
+            $categories = Category::popular()->active()->orderBy('created_at')->get();
+            
+            - To print query
+                1- $categories = Category::popular()->active()->toSql();
+            
+                2- or laravel-depugbar package
+                    - composer require barryvdh/laravel-debugbar --dev
+                    - (طول ما انا شغال ديفلوبر بس واول ما يدخل برودكشن هيقف )
+                    - Two queries in create project view
+                        1- select * from 'sellers' where 'id' =1 limit=1  ----> from middelware auth 
+                        2- select 'id','name' from 'category' where status=1 ---> from scope
+            
+                    - to control debug bar:-
+                        .env APP_DEBUG=true
+                             APP_DEBUG=false
+----------------------------------------------------------------------------------------------------------------------------------------------
+edit the views
+-----------------
+    1- Readable table products in products/index.php
+        A- Status
+            - Print status value
+                1- $product->status ? 'active':'not active';
+                2- اعطيله قيمه يجبلك اسمها CategoryEnum
+                    - {{ App\Enums\CategoryEnum::tryFrom($product->status)?->name }}   
+                        - dd(CategoryEnum::tryFrom(1));
+                            return { 'name':'Active' , 'value':1 }
+                        
+                        - dd(CategoryEnum::tryFrom(0));
+                            return { 'name':'Not-Active' , 'value':0 }
+                        
+                        - dd(CategoryEnum::tryFrom(3)); ودي مش موجود
+                            attemp to read name of property null
+                        
+                        - App\Enums\CategoryEnum::tryFrom(1)?->name
+                            ? لو اللي جاي  null متكلمش ال name
+                            ومترجعليش ايرور                     
+                3- Helper
+                    - in Support / helpers.php
+                        printEnum($enum, mixed $value): string
+                        return ucfirst(strtolower(str_replace('_',' ', $enum::tryFrom($value)?->name)));
+            
+                    - in view
+                        {{__("translate.".printEnum(App\Enums\CategoryEnum::class, $product->status))}}
 
-ازاي امسح تابل من الميجريشن (رول باك)
-من الpending امسحه من visualstudio
+            - Color status
+                    - class="{{$product->status? 'text-green':'text-danger'}}"
+                    or
+                    - Class Directive
+                        @class([
+                            'font-bold',          هيتحقق دايما
+                            'text-success'=> $product->status,  هيتحقق لو اللي جاي واحد ومش هيتحقق لو اللي جاي بصفر 
+                            'text-danger'=> !$product->status,  مش هيتحقق طول ما اللي جاي بواحد هيتحقق لو اللي جاي بصفر
+                            'text-gray'=> true    هيتحقق دايما
+                            'bg-light' => false   مش هيتحقق ابدا
+                        ])
+        
+        B-Seller name ملوش لازمه
+        C- Category name
+            <td>{{$product->category->name}}</td> ( من العلاقه )
+            - problem:- (lazy loading) n+1
+            - solution:-  
+                by sql (query builder):-
+                    - select, join 
+                    - high preformance. (1000 query -> 1 query) 
+                    - quickly without mapping
 
-====================================================================================
+                by laravel (eloquent):-
+                    Lazy loading (n+1)
+                        - $product->category->name
+                            - عدد الكويلاري زادت جدا بعد ما جبت اسم الكاتوجري والبريفورمنس هيقل
+                            - lazy loading low preformance (n+1 problem) (1000 query -> 1001 query)
+
+                    Eager loading (with method in controller --> eager loading) (1000 query -> 2 query)
+                        - In controller index() --> $products = Product::with('category')->where('seller_id', Auth::guard('seller')->id())->get();
+                        - eloquent model mapping data كل كاتيجوري نيم بصاحبها
+
+                        - In controller show()  مش ضروري هنا اني اعمل load لانه منتج واحد
+                            - $product->load('category') بدل with
+                            - مع with منفعتش route model binding
+                            show(Product $product, string $slug = null)
+                                $product->load('category');
+                                return view('seller.products.show', compact('product'));
+ 
+    2- show Method() in controller
+        $product->load('category') بدل with
+        مع with منفعتش
+        route model binding
+
+    3- update Method() 
+        payload الداتا اللي في الريكوست
+        الكويري استرينج او الbody اللي فيها بيانات
+        
+        problem:-
+            Delete, update هيضربوا بسبب الانكربت ايدي the payload is invalid
+            اي حاجه بتعمل راوت مودل بيندينج في الكنترولر ده لازم يتعمل تشفير للايدي
+
+        solution:-
+            1- resources\views\seller\products\edit.blade.php
+                <form method="post" action="{{ route('sellers.products.update',  \Illuminate\Support\Facades\Crypt::encryptString($product->id)) }}"
+            2- resources\views\seller\products\index.blade.php
+                <a href="{{route('sellers.products.show', ['slug'=> $product->slug, 'product' => \Illuminate\Support\Facades\Crypt::encryptString($product->id)])}}" class="btn btn-sm btn-success my-2 rounded-pill d-inline"> {{__('seller.all_products.show')}} </a>
+                <a href="{{route('sellers.products.edit', ['slug'=> $product->slug, 'product' => \Illuminate\Support\Facades\Crypt::encryptString($product->id)])}}" class="btn btn-sm btn-primary my-2  rounded-pill d-inline"> {{__('seller.all_products.edit')}} </a>
+                <form class="" action="{{route('sellers.products.destroy', \Illuminate\Support\Facades\Crypt::encryptString($product->id))}}" method="post" class="d-inline">
+        view:- 
+            - old value        
+                <input type="text" name="name[en]" class="form-control" id="name_en" value="{{ old('name.en', $product->getTranslation('name', 'en')) }}">
+                <input type="text" name="name[ar]" class="form-control" id="name_ar" value="{{ old('name.ar', $product->getTranslation('name', 'ar')) }}">
+                <input type="number" name="purchase_price" class="form-control" id="purchase_price" value="{{ old('purchase_price', $product->purchase_price) }}">
+                <input type="number" name="sale_price" class="form-control" id="sale_price" value="{{ old('sale_price', $product->sale_price) }}">
+                
+                <input type="number" name="quantity" class="form-control" id="quantity" value="{{ old('quantity', $product->quantity) }}">
+            
+                <select name="status" class="form-control" id="status">
+                    <option value="1" @selected((string) old(' status', $product->status) === '1')>
+                    <option value="0" @selected((string) old(' status', $product->status) === '0')>
+                                
+                <select name="category_id" class="form-control" id="category_id">
+                        @foreach ($categories as $category)
+                            <option @selected(old('category_id', $product->category_id == $category->id)) value="{{ $category->id }}">
+                                {{ $category->name }}
+                            </option>
+                        @endforeach
+                </select>
+
+                <textarea class="form-control" name="description[en]" placeholder="{{ __('seller.edit_product.description_en') }}"> {{ old('description.en', $product->getTranslation('description', 'en')) }} </textarea>
+                <textarea class="form-control" name="description[ar]" placeholder="{{ __('seller.edit_product.description_ar') }}"> {{ old('description.ar', $product->getTranslation('description', 'ar')) }} </textarea>
+                                                                                                
+            - status مبترجعش
+                data from request return string '1'
+                data from db return depend on datatype 1 as integer
+                        (string)$product->status الحل
+                        <option value="1" @selected((string) old(' status', $product->status) === '1')>
+
+            - In controller
+                1- validation request
+                2- check image and update image
+                    if $request->has('image')
+                            remove the old image
+                            insert the new image
+                            update product in db 
+                    else update in db only
+                    
+                3- update(UpdateProductRequest $request, Product $product)
+                        if ($request->has('image')){
+                            $media= $product->getFirstMedia('product');
+                            $media->delete();
+                            $product->addMediaFromRequest('image')->toMediaCollection('products');}
+                            
+                        $product->update($request->validated());
+                        return redirect()->route('sellers.products.index')->with('success', __('general.messages.updated'));
+    
+    4- alert (delete متاكد؟) 3:20:21
+        فشلنا
+
+    5- to delete package:-
+        composer update name package version or 
+        امسحها ايدي من ال composer وبعدين اعمل composer install
+
+
+    6- ازاي امسح تابل من الميجريشن (رول باك)
+        من الpending امسحه من visualstudio
+
+---------------------------------------------------------------------------------------------
 4/7/2023
----------
+------------------
 how to solve conflict local مهم
 ADD specs
 form repeater
@@ -1676,5 +1836,1115 @@ specs
 cities 
 regions 
 
+------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+<?php
+
+namespace App\Http\Controllers\Seller;
+
+use App\Models\Product;
+use App\Models\Category;
+use App\Http\Controllers\Controller;
+use App\Http\Requests\Product\StoreProductRequest;
+use Illuminate\Support\Facades\Auth;
+use App\Http\Requests\Product\UpdateProductRequest;
+use App\Models\Spec;
+use App\Services\SpecService;
+use Illuminate\Http\Request;
+
+class ProductsController extends Controller
+{
+    /**
+     * Display a listing of the resource.
+     *
+     * @return \Illuminate\Http\Response
+     */
+    public function index()
+    {
+
+        $products = Product::with('category')->where('seller_id', Auth::guard('seller')->id())->get();
+        return view('seller.products.index', compact('products'));
+    }
+
+    /**
+     * Show the form for creating a new resource.
+     *
+     * @return \Illuminate\Http\Response
+     */
+    public function create()
+    {
+        $specs = Spec::all();
+        $categories = Category::select(['id', 'name'])->active()->get();
+        return view('seller.products.create', compact(['categories' , 'specs']));
+    }
+
+    /**
+     * Store a newly created resource in storage.
+     *
+     * @param  \Illuminate\Http\Request  $request
+     * @return \Illuminate\Http\Response
+     */
+    public function store(StoreProductRequest $request , SpecService $specService)
+    {
+        $code = productCode($request->name['en']);
+        $product = Product::create(array_merge($request->validated(),
+        [
+            'code'=> $code,
+            'seller_id' => Auth::guard('seller')->id(),
+        ]));
+        if($images = $request->file('images')){
+            foreach($images as $image){
+                $product->addMedia($image)->toMediaCollection('product');
+            }
+        }
+        $specsData = Spec::all();
+        $specIds=$specService->saveSpecs($request->spec_names , $specsData);
+        $productSpecs = $specService->matchIds($specIds , $request->spec_values);
+        $specService->saveProductSpecs($productSpecs , $product);
+        return redirect()->route('sellers.products.index')->with('success', __('general.messages.created'));
+    }
+
+    /**
+     * Display the specified resource.
+     *
+     * @param  int  $id
+     * @return \Illuminate\Http\Response
+     */
+    public function show(Product $product, SpecService $specService, string $slug = null)
+    {
+        $product->load('category','reviews.user:id,name');
+        $specIds = $specService->getSpecsIds($product);
+        $specNames = $specService->getSpecsNames($specIds);
+        $specValues = $specService->getSpecsValues($product);
+        $specs = $specService->generateSpecs($specNames , $specValues);
+        return view('seller.products.show', compact(['product' , 'specs']));
+    }
+
+    /**
+     * Show the form for editing the specified resource.
+     *
+     * @param  int  $id
+     * @return \Illuminate\Http\Response
+     */
+    public function edit(Product $product)
+    {
+        $categories = Category::select(['id', 'name'])->active()->get();
+        return view('seller.products.edit', compact('product', 'categories'));
+    }
+
+    /**
+     * Update the specified resource in storage.
+     *
+     * @param  \Illuminate\Http\Request  $request
+     * @param  int  $id
+     * @return \Illuminate\Http\Response
+     */
+    public function update(UpdateProductRequest $request, Product $product)
+    {
+        if($request->has('image')){
+            $media = $product->getFirstMedia('product');
+            $media->delete();
+            $product->addMediaFromRequest('image')->toMediaCollection('product');
+        }
+        $product->update($request->validated());
+        return redirect()->route('sellers.products.index')->with('success', __('general.messages.updated'));
+
+    }
+
+    /**
+     * Remove the specified resource from storage.
+     *
+     * @param  int  $id
+     * @return \Illuminate\Http\Response
+     */
+    public function destroy(Product $product)
+    {
+        $product->specs()->detach();
+        $product->delete();
+        return redirect()->back()->with('success', __('general.messages.deleted'));
+    }
 
 
+}
+
+
+------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+28/4/2023
+------------------
+- ShowProductView
+    ازاي اربط الصوره بالزرار
+    bootstrab carousel
+
+    - handle add multi image in createView and delete any of them
+
+    -In view ?????
+        <input id='files' type='file' name="images[]" class="d-none" multiple />
+        <div id="myImg">
+        </div>
+    -In controller
+        if($images = $request->file('images')){
+            foreach($images as $image){
+                $product->addMedia($image)->toMediaCollection('product');
+            }
+        }
+
+    -In request
+        "images" => ['required', 'array'],
+        'images.*' => ['max:1024']
+
+- Delete product with specs
+    عاوز امسح من الجدول الوسيط في علاقه many to many
+    - attach
+
+    - detach  
+        $product->specs()->detach();
+        يوزر عاوز امسحله الرولز بتاعته 
+        بمسح من الجدول الوسيط
+        السطر ده بدل ما اعمل كل ده 
+        === 
+        // $productSpecs = ProductSpecs::where('product_id', $product->id)->get();
+        // foreach($productSpecs as $productSpec){
+        //     ProductSpec::where('product_id',$productSpec->product_id)->delete();
+        // }
+    لو انا عاوز امسح اسبك معينه اعطيله id 
+
+--------------------------------------------------
+in admin Controller
+    - crud categories --> 
+        1- In CategoriesController
+            - index()
+                $categories = Category::all();
+                return view('admin.categories.index' , compact('categories'));
+    
+            - create()
+                return view('admin.categories.create');
+
+            - store(StoreCategoryRequest $request)
+                Category::create($request->validated());
+                return redirect()->route('admins.categories.index')->with('success', __('general.messages.created'));
+    
+            - edit(Category $category )
+                return view('admin.categories.edit' , compact('category'));
+
+            - update(UpdateCategoryRequest $request, Category $category)
+                $category->update($request->validated());
+                return redirect()->route('admins.categories.index')->with('success', __('general.messages.updated'));
+
+            - destroy(Category $category)
+                $category->delete();
+                return redirect()->back()->with('success', __('general.messages.deleted'));
+    
+        2- In request
+            - StoreCategoryRequest
+                authorize()
+                    return Auth::guard('admin')->check();
+
+                rules()
+                    "name" => ['required', 'array:ar,en'],
+                    'name.*' => ['required', 'min:2', 'max:128'],
+                    "status" => ['required', 'in:0,1'],
+            - UpdateCategoryRequest
+                authorize()
+                    return Auth::guard('admin')->check();
+                rules()
+                    "name" => ['required', 'array:ar,en'],
+                    'name.*' => ['required', 'min:2', 'max:128'],
+                    "status" => ['required', 'in:0,1'],
+
+
+        
+-----------------------------------------------------------------------------------
+    - crud regions  --> RegionsController extends Controller
+        1- In Controller
+            - index()
+                $regions = Region::all();
+                return view('admin.regions.index', compact('regions'));
+
+            - create()
+                $cities = City::select(['id','name'])->get();
+                return view('admin.regions.create', compact('cities'));
+
+            - store(RegionStoreRegionRequest $request)
+                Region::create($request->validated());
+                return redirect()->route('admins.regions.index')->with('success', __('general.messages.created'));
+        2- In Request
+            - StoreRegionRequest extends FormRequest
+                authorize()
+                        return Auth::guard('admin')->check();
+                rules()
+                    "name" => ['required', 'array:ar,en'],
+                    'name.*' => ['required', 'min:2', 'max:128'],
+                    "status" => ['required', 'in:0,1'],
+                    "city_id" => ['required', 'integer', 'exists:cities,id'],
+            - UpdateRegionRequest extends FormRequest
+                authorize()
+                        return Auth::guard('admin')->check();
+                rules()
+                    "name" => ['required', 'array:ar,en'],
+                    'name.*' => ['required', 'min:2', 'max:128'],
+                    "status" => ['required', 'in:0,1'],
+                    "city_id" => ['required', 'integer', 'exists:cities,id'],
+        3- views
+            <form method="post" action="{{ route('admins.regions.store') }}"
+                    enctype="multipart/form-data">
+                    @csrf
+                    
+                <label for="name_en">{{ __('admin.add_region.name_en') }}</label>
+                <input type="text" name="name[en]" class="form-control" id="name_en"
+                    value="{{ old('name.en') }}">
+                        
+                <label for="name_ar">{{ __('admin.add_region.name_ar') }}</label>
+                <input type="text" name="name[ar]" class="form-control" id="name_ar"
+                    value="{{ old('name.ar') }}">
+                        
+                <label for="status">{{ __('admin.add_region.status') }}</label>
+                <select name="status" class="form-control" id="status">
+                    <option value="" disabled selected></option>
+                    <option value="1">
+                        {{ __('admin.add_region.active') }}</option>
+                    <option value="0">
+                        {{ __('admin.add_region.not_active') }}</option>
+                </select>
+                    
+                <label for="city_id">{{ __('admin.add_region.city') }}</label>
+                <select name="city_id" class="form-control" id="city_id">
+                    <option value="{{__('admin.add_region.choose')}}" selected >{{__('admin.add_region.choose')}}</option>
+                    @foreach ($cities as $city)
+                        <option @selected(old('city_id') == $city->id) value="{{ $city->id }}">
+                            {{ $city->name }}</option>
+                    @endforeach
+                </select>
+        
+                <div class="card-footer ">
+                    <button type="submit" class="button-general w-50">
+                        {{ __('admin.add_region.submit') }} </button>
+                </div>
+            </form>
+-----------------------------------------------------------------------------------
+    - crud cities 
+        1- In CitiesController 
+
+            - index()
+                $cities = City::all();
+                return view('admin.cities.index', compact('cities'));
+
+            - create()
+                return view('admin.cities.create');
+
+            - store(StoreCategoryRequest $request)
+
+                City::create($request->validated());
+                return redirect()->route('admins.cities.index')->with('success', __('general.messages.created'));
+
+            - edit(City $city)
+                return view('admin.cities.edit', compact('city'));
+
+            - update(UpdateCategoryRequest $request, City $city)
+                $city->update($request->validated());
+                return redirect()->route('admins.cities.index')->with('success', __('general.messages.updated'));
+
+            - destroy(City $city)
+                try {
+                    $city->delete();
+                    return redirect()->route('admins.cities.index')->with('success', __('general.messages.deleted'));
+                }
+                catch (\Exception $error) {
+                    return redirect()->route('admins.cities.index')->with('error', __('general.cities.failed'));
+                }
+            
+        3-views
+            C:\xampp\htdocs\ecommerce-b2\resources\views\admin\cities
+
+    - crud specifications
+
+        1- SpecsController
+       
+            - index()
+                $specs = Spec::all();
+                return view('admin.specifications.index', compact('specs'));
+
+            - create()
+                return view('admin.specifications.create');
+        
+            - store(StoreSpecRequest $request, Spec $spec)
+                Spec::create($request->validated());
+                return redirect()->route('admins.specs.index')->with('success', __('general.messages.created'));
+            - edit(Spec $spec)
+                return view('admin.specifications.edit', compact('spec'));
+
+            - update(UpdateSpecRequest $request, Spec $spec)
+                $spec->update($request->validated());
+                return redirect()->route('admins.specs.index')->with('success', __('general.messages.updated'));
+
+        2- In Request 
+            - StoreSpecRequest
+                - authorize()
+                    return Auth::guard('admin')->check();
+                - rules()
+                    "name" => ['required', 'array:ar,en'],
+                    'name.*' => ['required', 'min:2', 'max:128', 'unique_translation:specs'],
+        
+            - UpdateSpecRequest
+                - authorize()
+                    return Auth::guard('admin')->check();
+                - rules()
+                    "name" => ['required', 'array:ar,en'],
+                    'name.*' => ['required', 'min:2', 'max:128', "unique_translation:specs,name,{$this->spec->id},id"],
+        3- views
+        C:\xampp\htdocs\ecommerce-b2\resources\views\admin\regions
+---------------------------------------------------------------------
+- admins.php
+    Route::prefix('admins')->name('admins.')->middleware(['auth:admin', 'verified:admin'])->group(function() {
+        Route::prefix('categories')->name('categories.')->controller(CategoriesController::class)->group(function() {
+            Route::get('/', 'index')->name('index');
+            Route::post('/', 'store')->name('store');
+            Route::get('/create', 'create')->name('create');
+            Route::prefix('{category}')->group(function() {
+                Route::put('/', 'update')->name('update');
+                Route::delete('/', 'destroy')->name('destroy');
+                Route::get('show/{slug?}', 'show')->name('show');
+                Route::get('edit/{slug?}', 'edit')->name('edit');
+            });
+        });
+    });
+
+    Route::prefix('admins')->name('admins.')->middleware(['auth:admin', 'verified:admin'])->group(function() {
+        Route::prefix('cities')->name('cities.')->controller(CitiesController::class)->group(function() {
+            Route::get('/', 'index')->name('index');
+            Route::post('/', 'store')->name('store');
+            Route::get('/create', 'create')->name('create');
+            Route::prefix('{city}')->group(function() {
+                Route::put('/', 'update')->name('update');
+                Route::delete('/', 'destroy')->name('destroy');
+                Route::get('show/{slug?}', 'show')->name('show');
+                Route::get('edit/{slug?}', 'edit')->name('edit');
+            });
+        });
+    });
+
+    Route::prefix('admins')->name('admins.')->middleware(['auth:admin', 'verified:admin'])->group(function() {
+        Route::prefix('regions')->name('regions.')->controller(RegionsController::class)->group(function() {
+            Route::get('/', 'index')->name('index');
+            Route::post('/', 'store')->name('store');
+            Route::get('/create', 'create')->name('create');
+            Route::prefix('{region}')->group(function() {
+                Route::put('/', 'update')->name('update');
+                Route::delete('/', 'destroy')->name('destroy');
+                Route::get('show/{slug?}', 'show')->name('show');
+                Route::get('edit/{slug?}', 'edit')->name('edit');
+            });
+        });
+    });
+
+    Route::prefix('admins')->name('admins.')->middleware(['auth:admin', 'verified:admin'])->group(function() {
+        Route::prefix('specs')->name('specs.')->controller(SpecsController::class)->group(function() {
+            Route::get('/', 'index')->name('index');
+            Route::post('/', 'store')->name('store');
+            Route::get('/create', 'create')->name('create');
+            Route::prefix('{spec}')->group(function() {
+                Route::put('/', 'update')->name('update');
+                Route::delete('/', 'destroy')->name('destroy');
+                Route::get('show/{slug?}', 'show')->name('show');
+                Route::get('edit/{slug?}', 'edit')->name('edit');
+            });
+        });
+    });
+
+
+-----------------------------------------------------
+static SpecService
+بنادي عليها بطريقه دايركت
+    SpecService
+
+    public static function saveSpecs (array $specs,  $specsData)
+    {
+        $specIds = [];
+        foreach($specs as $spec){
+            $spec = Spec::whereJsonContains('name', $spec)->firstOr(function() use($spec) {
+                Spec::create(['name' => $spec]);
+            });
+            $specIds[]=$spec->id;
+        }
+        return $specIds;
+    }
+
+    public static function matchIds (array $specIds, array $specValues):array
+    {
+        for($i=0 ; $i<count($specIds) ; $i++){
+            $productSpecs[$specIds[$i]] = ['value'=>$specValues[$i]];
+        }
+        return $productSpecs;
+    }
+
+    public static function saveProductSpecs (array $productSpecs , Product $product)
+    {
+        $product->specs()->attach($productSpecs);
+    }
+
+    public static function getSpecsIds(Product $product):array
+    {
+        $specIds = [];
+        $productSpecs = ProductSpec::where('product_id' , $product->id)->get();
+        foreach ($productSpecs as $productSpec){
+            $specIds[] = $productSpec->spec_id;
+        }
+        return $specIds;
+    }
+
+    public static function getSpecsNames (array $specIds):array
+    {
+        $specNames = [];
+        $specnames []= Spec::all()->only($specIds);
+        foreach ($specnames[0] as $key=>$specname){
+            $specNames[] = $specname->name;
+        }
+        return $specNames;
+    }
+
+    public static function getSpecsValues(Product $product)
+    {
+        $specValues = [];
+        $productSpecs = ProductSpec::where('product_id' , $product->id)->get();
+        foreach ($productSpecs as $productSpec){
+            $specValues[] = $productSpec->value;
+        }
+        return $specValues;
+    }
+
+    public static function generateSpecs(array $specNames , array $specValues)
+    {
+        $specs = [];
+        for ($i=0 ; $i< count($specNames) ; $i++){
+            $specs[$specNames[$i]] = $specValues[$i];
+        }
+        return $specs;
+    }
+}
+
+
+--------------------------------------------------
+* Create product and add specs to this product:-
+    - Laravel unique translation package
+    - StoreSpecsRequest unique_translation:specs
+        composer install
+        how to get specific route parameter in form request?
+    - StoreSpecsRequest unique_translation:specs,name,{$this->specs->id},id
+
+* لغينا الفون للادمن واعمل داتابيز سيد
+
+* مينفعش الجاسون يكون يونيك
+table city 
+edit name in city table
+*********************************
+ميثود الtable مبتعملش رن بالترتيب عشان كده بتظهر المشكله
+*********************************
+
+1- findOr        ---> id
+2- firstOrCreate ---> withoutid
+
+ in savespecs service
+ عملتلي مشكله ضفتلي الاسبك مرتين معدلتش عليه
+ ازاي نقارن بين اتنين جسون في الsql 
+ الحل
+ where jsoncontain الاول
+ وبعدين firstor 
+use specs علشان الاسكوب
+------------------------------------
+star review 
+ star html
+ zmdi stars
+ in show.php view
+ @for ($i=0; $i < $review->rate; $i++)
+
+ @endfor
+ @for ($i=0; $i < 5-$review->rate; $i++)
+ @endfor
+------------------
+ReviewService
+1- by query
+    $reviews = Review::join('users','')->select()->where('');
+2- use relationship
+    $reviews =$product->reviews()->get(); موجود كل حاجه ما عدا اسم الرفيو
+--------------------
+وممكن حاجه احلي ابعت الرفيوز في اللود وانا بجيب الكاتوجري والسيرفز ملهمش معني
+
+
+حل عشان اجيب من بلازدكت اروح لرفيو اروح ليوزر و....
+nested eager loading
+$product->load($category,$reviews.user:id,name)
+ ---------------------------------
+
+ bard google?
+ابعاد الصور في صورة الhome 
+عاوزينه يعرض علي الصفحه الرئيسيه يعرض المقصوصه
+----------------------------------
+عاوزه اضغط علي الصوره تجبلي داتا
+ازاي ابعت فريبل من الphp للjs 
+
+-------------------------------------------
+tasks:
+in seller 
+    1- cycle coupon crud
+        discount ---> smallInteger
+        // Validation 
+        * max_usage_number_per_user وانا بعمل اوردر هروح اشوف استخدم الكوبون كام مره في 
+            coupon_user 
+        
+        * max_usage_number محتاج coupon_user 
+        * min_order_value محتاج order 
+        validate date 
+        وانا بكريت كوبون ينفع يكون قبل الستارت داتا
+        وانا بطبق كوبون مينفعش قبل الستارت دات
+        create, update, apply هتختلف الvalidation
+    2- 
+    لو جحد عمل اوردر يجيبه 
+    السيلر بيعمل كوبون مش اوفر ويشوف الاوردرات
+    user create order 
+
+**in admin crud Region
+وحد السترينج يكون بنفس الupperTo lower ومفيش مسافات وبعد كده قارن
+مينفعش المنطقه تتكرر في نفس المدينه لازم الاسم unique json name
+جايلي من الفرونت اند اراي باللي موجود بالداتا بيز اللي هوه جوسون 
+by laravel unique translation package 
+custom validation rule in laravel
+
+** when i try to delete city or region (sql error)
+هنهندل ده عن طريق رساله try and catch
+- destroy(City $city)
+try {
+    $city->delete();
+    return redirect()->route('admins.cities.index')->with('success', __('general.messages.deleted'));
+}
+catch (\Exception $error) {
+    return redirect()->route('admins.cities.index')->with('error', __('general.cities.failed'));
+}
+
+السؤال لو الوجيك بتاعي انه ممكن يمسح حتي لو في فورن كي ده بظبطه في الميجريشن وخلاص؟
+منحطش اسلج في الريجون والسيتي وال
+
+----------------------------------------------------
+5/5/2023
+الساعه 8
+cart api 
+add to cart send request
+dashboard.blade.php
+الزرار يكون شايل
+button user id, product id
+مشكله انه لازم تكون عامل لوجن وانا بعمل الكارت 
+بس في حل انه مجبروش يعمل لوجن
+laravel hopping cart package
+هيعتمد علي السيشن
+الكارت هتختلف من براوزر للتاني 
+كوكيز
+unique id 123 --->produvt1
+ولما اعمل لوجن روح بص علي الكوكيز لو ضايف اجه في الكارت حطهم لليوزر
+
+user-value=auth::guard(user->id) , product_id=product->id
+حط للزرار كلاس مش ايدي لانه جوه لوب
+لما يدوس علي الزرار هعمل get attribute to this button
+همسكهم بالجافاسكريبت وابعتهم في ال api
+ومحتاج اعرف اسم الdomain
+{{asset('api/....')}}
+ايه اللي هبعتهومحتاج امسكه في الفيو 
+اليورلالميثود 
+البروفايدر
+الهيدر
+ابعت بقي json request
+الجافاسكريبت هتبعت ريكوست والباك هيستقبلها في ال api
+ومش عاوز وانا بعمل addto cart الصفحه تعمل ريلود وكمان تطلع لفوق
+القرار 
+لو عمل اضافه لنفس المنتج مرتين زود كميته
+attach
+sync هتمسح القديم وتحط الجديد
+syncWithoutDetaching
+-------------------
+CartController.php
+.....
+
+مشكله برغم انه شايف الستيتس 200 وعنده ايرور 
+حط ال headers , json.stringfy
+هيطبعلي الresponse
+
+add sweet alert in dashboard user
+ولما يضيف الكارت كمان الرقم اللي جمب السله يتحدث
+
+$this->success('message', status);
+$this->error('message', status);
+$this->data('data','message', status )
+
+عاوز عدد الكارتس
+User::withCount('carts') 
+وابعتها في الداتا تبقي موجوده في ال ريسبونس
+in veiw data-notify هغير فيها 
+في ال successjson 
+هحط فيها العدد الصح 
+ومحتاج كمانازود ال ما افتح الصفحه تكون دينامك
+ظهرت مشكله العدد ناقص واحد علشان انا بجيب العدد قبل ما اعمل create
+الحل زود واحد لو ضفت جديد
+------------------------------
+one query in multiple views
+documentation view-composers
+boot()
+providers
+create viewServiceProvider.php
+config->app.php اعمله register
+-------------------------------------
+add to wish list مفيش اب ديت
+create or delete
+زوده في الميجريشن
+10:05
+اول ما الصفحه تفتح اللي محطوط في ال مفضله يكون واضح
+لما اضغط ولما اضغط مره تانيه لما يدوس علي الفلب اغير حالته
+وهنعرض كام حاجه في المفضله العدد
+------------------------------------------
+صفحه الفيو سيرفيز يوزر
+عشان نجيب محتويات اليوزر
+attributes, relations هترجعه
+------------------------------------------------------------------------------------------------------
+19/5/2023
+------------------------------------------------------------------------------------------------------
+1- middleware
+    - انا في الهوم ودخلت الكارت قام قالي ارجع اعمل تسجيل دخول واول ما نعمل دخول ارجع بقي لصفحه الكارت مش الهوم
+      redirect هيرجعني للصفحه اللي كنت عاوز اعملها دخول قبل ال login
+
+    - in AuthenticatedSessionController
+        public function store(LoginRequest $request){
+            $request->authenticate($this->getGuard());
+            $request->session()->regenerate();
+            return redirect()->route($this->getRouteNamePrefix() . 'dashboard');
+        }
+
+-------------------------------------------------------------------------------------------------------
+2- subTotalService by prototype design pattern
+    - subTotal(CartProducts $cartProducts, float $discount = 0) :string
+        {
+            $subTotal = 0;
+            foreach($cartProducts->getProducts() as $cartProduct){
+                $subTotal += $cartProduct->getPrice() * $cartProduct->getQuantity();
+            }
+            $subTotalAfterDiscount = $subTotal - $discount;
+            return $subTotalAfterDiscount ;
+        }
+-------------------------------------------------------------------------------------------------------
+Apply coupon:-
+------------------------------------------------------------------- 
+- User::with('coupons')->withCount('coupons')->findOrFail($request->user->id) ***
+    مينفعش اقوله عدلي الكوبنات اللي استخدمها اليوزر لانه هيعد الكوبونات جنرال
+- $error(['coupon'=>'.......'], statusCode)
+- مينفعش اعتمد علي الجافاسكريبت في اني اجيب السعر
+    انا ممكن اعتمد عليه في اني اجيب id user, product
+    $request->orderTotal  كده انا معتمد انها جيالي من الريكوست الجاسون في الفرونت لازم تتحسب تاني 
+    $request->couponApplyDate مينفعش برده وممكن اجيبه من السيرفر
+
+- اكبر خصم ممكن يعمله الكوبون $coupon-> max_discount_value
+
+---------------------
+الشروط اللي محتاجها؟ 
+---------------------
+
+
+
+-------------------------------------------------------------------------------------
+SubTotalService prototype design pattern studying
+-------------------------------------------------------------------------------------
+
+1- Interface CartProductsInterface ---> app\Entities\CartProducts.php // object from ProductEntity
+    - public function addProduct(ProductEntity $cartProduct);
+    - public function getProducts();
+
+2- CartProducts implements CartProductsInterface ---> app\Entities\CartProductsInterface.php
+    - private $cartProducts = [];
+    - public function addProduct(ProductEntity $cartProduct)
+        $this->cartProducts []= $cartProduct;
+    - public function getProducts()
+        return $this->cartProducts;
+
+3- Interface ProductEntityInterface ---> app\Entities\ProductEntityInterface.php
+    public function getPrice(): float;
+    public function setPrice(float $price);
+    public function getQuantity(): int;
+    public function setQuantity(int $quantity);
+
+4- ProductEntity implements ProductEntityInterface ---> app\Entities\ProductEntity.php
+    private $price,$quantity;
+    public function getPrice():float
+        return $this->price;
+    public function setPrice($price)
+        $this->price = $price;
+    public function getQuantity(): int
+        return $this->quantity;
+    public function setQuantity(int $quantity)
+        $this->quantity = $quantity;
+
+
+5- OrderCalcs  ---> app\Services\OrderCalcs.php        // object from ProductEntity from CartProducts
+    - public static function subTotal(CartProducts $cartProducts, float $discount = 0) :string
+        $subTotal = 0;
+        foreach($cartProducts->getProducts() as $cartProduct){
+            $subTotal += $cartProduct->getPrice() * $cartProduct->getQuantity();
+        }
+        $subTotalAfterDiscount = $subTotal - $discount;
+        return $subTotalAfterDiscount ;
+
+6- CartController ---> app\Http\Controllers\User\CartController.php
+    - public function cart(CartProducts $cartProducts, OrderCalcs $orderCalcs)
+        if(Auth::guard('web')->check()){
+            $user = Auth::guard('web')->user()->with(['wishlists','carts', 'addresses.region.city'])->withCount('carts','wishlists')->first();
+            foreach($user->carts as $product){
+                $cartProduct = new ProductEntity();
+                $cartProduct->setPrice($product->sale_price);
+                $cartProduct->setQuantity($product->carts->quantity);
+                $cartProducts->addProduct($cartProduct);
+            }
+            $subTotal = OrderCalcs::subTotal($cartProducts);
+            return view('user.cart', compact('user', 'subTotal'));
+        }
+-------------------------------------------------------------------------------------
+وفصل الراوتس والكنترولز البلوج والكارت بتاعت الفرونت اند.....
+ومسح الفرونت اند كنترولر
+
+C:\xampp\htdocs\ecommerce-b2\app\Http\Controllers\User\ProductDetailsController.php
+C:\xampp\htdocs\ecommerce-b2\app\Http\Controllers\User\IndexController.php
+C:\xampp\htdocs\ecommerce-b2\app\Http\Controllers\User\ShopController.php
+C:\xampp\htdocs\ecommerce-b2\app\Http\Controllers\User\ContactController.php
+C:\xampp\htdocs\ecommerce-b2\app\Http\Controllers\User\CartController.php
+C:\xampp\htdocs\ecommerce-b2\app\Http\Controllers\User\AddressController.php
+C:\xampp\htdocs\ecommerce-b2\app\Http\Controllers\User\AboutController.php
+-------------------------------------------------------------------------------------
+- app\Http\Controllers\Admin\RegionsController.php  --->  ضاف السيتي مع كل كنترولرز
+    - index()
+        $regions = Region::with('city')->get();    // all attributes
+        $regions = Region::with('city:name, id')   // specific attributes
+        return view('admin.regions.index', compact('regions'));
+
+-------------------------------------------------------------------------------------
+- 3 type of merge git
+-------------------------------------------------------------------------------------
+
+- Controllers\User\CartController
+    return view('user.cart', compact('user', 'subTotal'));
+- views\user\cart.blade.php
+    - when the totalPrice change in cart page
+        يتحط عنوان فيتحط توصيل  
+        او ابلاي كوبون فهيكون في الدسكاوونت 
+        address محتاج حاجات كتير 
+
+    - add new address 
+        1- هعمل شرط علي وجود ادرس من عدمه
+            - $user->addresses->count() هل ليه عناوين في الداتا بيز
+                - هعمل لوب علي الادرس بتاعتاليوزر اسم الريلاشن addresses
+                    - $user = Auth::guard('web')->user()->with(['wishlists','carts', 'addresses.region.city'])->withCount('carts','wishlists')->first();
+                    - عشان كده قدرت اعمل لوووب
+                    - @foreach ($user->addresses as $address) // eagerload
+                
+                - $address->region->city->name 
+                    - nested relation موجود جوه مودل الادرس ريلاشن الريجون وجوه الريجون ريلاشن الستي ومنها الاسم 
+                - @if ($address->floor) // الحاجات اللي تنفع null
+                    floor: {{ $address->floor }} -
+                @endif
+            - مفيش يوزر الادرس
+                @else 
+                    <p>No Shipping Addresses yet</p>
+                @endif
+        -In view 
+            @if($user->addresses->count())
+                <div class="rs1-select2 rs2-select2 bor8 bg0 m-b-12 m-t-9">
+                    <select class="js-select2" name="time">
+                        @foreach ($user->addresses as $address)   //array of object 
+                            <option @selected($loop->last)>
+                                {{ $address->region->city->name }},
+                                {{ $address->region->name }},
+                                {{ $address->street }},
+                                building: {{ $address->building }} -
+                                @if ($address->floor) // الحاجات اللي تنفع null
+                                    floor: {{ $address->floor }} -
+                                @endif
+                                @if ($address->flat)
+                                    flat: {{ $address->flat }} -
+                                @endif
+                                @if ($address->notes)
+                                    notes: {{ $address->notes }} -
+                                @endif
+                                ({{ $address->type }})
+                            </option>
+                        @endforeach
+                    </select>
+                    <div class="dropDownSelect2"></div>
+                </div>
+                @else 
+                    <p>No Shipping Addresses yet</p>
+                @endif
+                </div>
+                <div class="flex-w flex-m m-r-20 m-tb-5">
+                    <a href="{{route('users.address.index')}}" class="flex-c-m stext-101 cl2 size-118 bg8 bor13 hov-btn3 p-lr-15 trans-04 pointer m-tb-5">
+                        Add New Address
+                    </a>
+                </div>
+        2- في الحالتين هقدر اضيف ادرس جديد
+            <div class="flex-w flex-m m-r-20 m-tb-5">
+                <a href="{{route('users.address.index')}}" class="flex-c-m stext-101 cl2 size-118 bg8 bor13 hov-btn3 p-lr-15 trans-04 pointer m-tb-5">
+                    Add New Address
+                </a>
+            </div>
+---------------------------------------------------------------------------------
+Add New Address
+----------------
+    - معدلوش لازمه الابي اي هنا 
+        AddressesController extends Controller
+            use ApiResponses;
+            store(StoreAddressRequest $request)
+                Address::create($request->validated());
+                return $this->success('Address created successfully');
+
+    - مسحت الكنترولر بتاع البلوج وكمان الراوت بتاعها
+    - routes/frontend.php 
+        - middleware('auth:web') لازم
+            Route::name('users.')->group(function() {
+                Route::middleware('auth:web')->prefix('address')->controller(AddressController::class)->name('address.')->group(function() {
+                    Route::get('/', 'index')->name('index')->middleware('address.redirection');
+                    Route::post('/store', 'store')->name('store');
+                    Route::get('/edit/{address}', 'edit')->name('edit');
+                    Route::put('/update/{address}', 'update')->name('update');
+                    Route::delete('/destroy/{address}', 'destroy')->name('destroy');
+                });
+            });
+
+    - views/user/address/index.php [],g 
+        انا محتاج هنا الصفحه يكون فيها اليوزر اللي عامل لوجن
+        وكمان الادرسس الخاصه باليوزر ده
+        والريجونوز كلها
+    - Controller --> AddressController extends Controller
+        1- public function index()
+            $user = Auth::guard('web')->user();
+            $addresses = Address::with('region.city')->where('user_id', $user->id)->get();
+            $cities = City::where('status', 1)->get();
+            return view('user.address.index', compact('addresses', 'cities'));
+    - view
+    
+        <select class="select2" name="city_id" id="city">
+            <option selected disabled> Choose City</option>
+            @foreach ($cities as $city)
+                <option @selected(old('city_id') == $city->id) value="{{$city->id}}"> {{$city->name}}</option>
+            @endforeach
+        </select>
+
+        <select class="select2 d-none" name="region_id" id="region">
+            <option selected disabled> Choose Region</option>
+        </select>
+    2- ajax request to regions هحتاج اجيب الريجون المتاحه للمدن اللي اختارها  
+        - السيناريو اللي همشي عليه 
+            city select2 لو اختار مدينه يعرض ال ريجونز بتاعتها
+            لو مختارش خالص
+        - Route::post('regions', [RegionsController::class, 'index']);
+        - RegionsController Apis/User/regionsController.php
+            - use ApiResponses;
+            - index(Request $request)
+                - validation in the same class instead Of form request
+                    $request->validate([
+                        'city_id' => ['required', 'integer']
+                    ]); 
+                    $regions = Region::select('id', 'name')->where('city_id', $request->city_id)->get();
+                - عندي احتمالين يا اما في مناطق للمدينه
+                    how to check on number of return rows of retrieved data in laravel models
+                    if ($regions->count()) --> return $this->data($regions->toArray());
+                    if ($regions->count())   افضل من مع الابي اي لانه مازال شايف الاراي الفاضيه متحققه if ($regions)
+                
+                - يا اما لسه محطتلهاش مناطق
+                    else --> return $this->error(['city_id' => 'has no regions yet' ]);
+                -
+                RegionsController.php
+                    id غلط 
+                    id صح ومش ضايفله ريجونز
+        - user/address/index.php
+                var city_id = event.target.value;
+
+        - event select2 --> .on('select2:select',.....)
+            $('#city').on('select2:select', function(event) {
+                var city_id = event.target.value;
+                const url = "{{ asset('api/regions') }}";
+                const method = "POST";
+                const body = {
+                    'city_id': city_id,
+                };
+                const button = $(this);
+                $.ajax({
+                    url: url,
+                    type: method,
+                    headers: {
+                        'accept': 'application/json'
+                    },
+                    data: body,
+                    success: function(result) {
+                        $("#region").select2({ // turn on Select2
+                            tags: true,
+                            width: '100%'
+                        });
+
+                        $('#region').empty(); // Clear the options
+
+                        $.each(result.data, function(index, value) { // append new options
+                            var text = value.name.en;
+                            var option = new Option(text, value.id);
+                            $('#region').append(option);
+                        });
+
+                        $('#region').removeClass('d-none'); // show select 2
+                    },
+                    error: function(result) {
+                        console.log(result);
+                        Swal.fire(
+                            'Failed',
+                            'Something went wrong',
+                            'error'
+                        );
+                    }
+                });
+            });
+
+    - @include('components.redirect-messages') in script ---> resources\views\components\redirect-messages.blade.php
+        fire message sweet alert
+    - @include('seller.layouts.partials.errors')
+
+    - StoreAddressRequest --> app\Http\Requests\Address\StoreAddressRequest.php
+        - authorize()  --> return true; ????
+        - rules()
+            'street' => ['required', 'string', 'between:4,255'],
+            'building' => ['required', 'string', 'between:1,255'],
+            'floor' => ['required', 'string', 'between:1,255'],
+            'flat' => ['nullable', 'string', 'between:1,255'],
+            'notes' => ['nullable', 'string', 'max:255'],
+            'type' => ['required', 'string', 'in:WORK,HOME'],
+            'region_id' => ['required', 'integer', 'exists:regions,id'],
+            'city_id' => ['required', 'integer', 'exists:cities,id']
+        - how to handle the message of validation error in request ?
+        - messages()
+            return [
+                'region_id.required' => 'The region field is required.',
+                'region_id.integer' => 'The region field must be an integer.',
+                'region_id.exists' => 'The region field does n\'t exists.'];
+
+        2- public function store(StoreAddressRequest $request)
+            Address::create(array_merge($request->validated(), ['user_id' => Auth::guard('web')->id()]));
+            Handel it redirection
+            - Create AdressRedirectionMiddleware and 
+            - register it in kernal.php  ---> 'address.redirection' => \App\Http\Middleware\AddressRedirection::class,
+            - هطبق ده فين؟
+                - هطبقه وانا رايحه صفحه ال وانا بضضط علي اد ادرس من الكارت
+                    Route::get('/', 'index')->name('index')->middleware('address.redirection');
+                    
+                - هطبقه وانا رايحه صفحه ال وانا بضضط علي اد ادرس من الهوم
+                    <@auth('web')
+                        <li><a style="text-decoration: none" href="{{ route('users.profile.edit') }}"> {{__('user.profile.profile')}} </a></li>
+                        <li><a style="text-decoration: none" href="{{ route('users.address.index') }}"> My Addresses </a></li>
+                        <form method="POST" action="{{ route('users.logout') }}">
+                            @csrf
+                            <li><a style="text-decoration: none" href="route('users.logout')"
+                                    onclick="event.preventDefault();
+                                    this.closest('form').submit();"> {{__('user.header.logout')}} </a>
+                            </li>
+                        </form>
+                    @else
+            - how to get previous url in php, laravel
+                - Middleware
+                    handle(Request $request, Closure $next)
+                        $previousUrl = url()->previous(); //هترجعهولي كامل 
+                        if (basename($previousUrl) === 'cart') { // هترجعلي اخر كلمه في اليورل 
+                            session()->put('redirect_url', route('cart')); هخزنه في السيشن بس مش مهمته انه يعمل ريديريكت
+                        }
+                        return $next($request);
+                    }
+                - Controller
+                    if (session()->get('redirect_url')) {
+                        $url = session()->get('redirect_url'); //خزنه وامسحه
+                        session()->forget('redirect_url');
+                        return redirect($url);
+                    }
+                    return redirect()->back()->with('success', 'Address has been created successfully');
+            - اعرضلي في الادرس واعمل سليكت لاخر ادرس
+                <option @selected($loop->last)>
+                loop variable
+C:\xampp\htdocs\ecommerce-b2\resources\views\user\address\edit.blade.php
+<option @selected(old('region_id', $address->region->id) == $region->id) value="{{$region->id}}"> {{$region->name}}</option>
+
+
+ $("#region").select2({ // turn on Select2
+                        tags: true,
+                        width: '100%'
+        });
+        $('#city').on('select2:select', function(event) {
+            var city_id = event.target.value;
+            const url = "{{ asset('api/regions') }}";
+            const method = "POST";
+            const body = {
+                'city_id': city_id,
+            };
+            const button = $(this);
+            $.ajax({
+                url: url,
+                type: method,
+                headers: {
+                    'accept': 'application/json'
+                },
+                data: body,
+                success: function(result) {
+                    $("#region").select2({ // turn on Select2
+                        tags: true,
+                        width: '100%'
+                    });
+                    $('#region').empty(); // Clear the options
+                    $.each(result.data, function(index, value) { // append new options
+                        var text = value.name.en;
+                        var option = new Option(text, value.id);
+                        $('#region').append(option);
+                    });
+                    $('#region').removeClass('d-none'); // show select 2
+                },
+                error: function(result) {
+                    console.log(result);
+                    Swal.fire(
+                        'Failed',
+                        'Something went wrong',
+                        'error'
+                    );
+                }
+            });
+        });
+
+        3- public function edit(Address $address)
+            $address->load('region.city');
+            $cities = City::where('status', 1)->get();
+            $regions = Region::where('city_id', $address->region->city->id)->get(); // عشان اول ما بفتح الصفحه بيكون جايبهم
+            return view('user.address.edit', compact('address', 'cities', 'regions'));
+        
+        4- public function update(StoreAddressRequest $request, Address $address) // زي الاستور ولكن بدون الريديركشن
+            $address->update(array_merge($request->validated(), ['user_id' => Auth::guard('web')->id()]));
+            return redirect()->route('users.address.index')->with('success', 'Address has been Updated successfully');
+        
+  
+        
+        5- public function destroy(Address $address)
+            $address->delete();
+            return redirect()->back()->with('success', 'Address has been deleted successfully');
+
+
+        $controller user::with(['wishlists','carts','address.region.city'])
+
+ 
+
+
+-----------------------------------------------------------------
+- add address with single page app task
+- max shipping handle نسبه ثابته
+---------------------------
+
+
+
+لو في شركه توصيل شحن محتاج يكون عندي API منها نعرف الاوردر وصل فين وتعرضه في الموقع 
+location, db, status
+هكلم الجوجل ماب google map for calulate distance بالدولار
+وممكن عن طريق الphp without google map distance, speed, ومنها احسب الزمن
+-------------
+return from apply coupon
+discount value, message
+error message متعرضوش بالظبط invalid coupon
+هعرض الماسدج من الفرونت اند واعملها كاستم عادي 
+------------------------
