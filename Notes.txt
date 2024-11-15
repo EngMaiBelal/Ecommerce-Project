@@ -1,3 +1,4 @@
+https://github.com/galal-husseny/ecommerce-b2/blob/master/lang/ar/validation.php
 0- create Project 
     - open command prompt
     - composer create-project laravel/laravel example-app
