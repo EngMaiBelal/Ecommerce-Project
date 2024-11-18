@@ -847,15 +847,18 @@ translation:
         <html lang="ar" dir="rtl">
     @endif
 
-- in the header page:-
-     @foreach (LaravelLocalization::getSupportedLocales() as $lang => $value)
-        @if ($lang == App::currentLocale())
-            @continue
-        @endif
-        <a rel="alternate" hreflang="{{ $lang }}" href="{{ LaravelLocalization::getLocalizedURL($lang, null, [], true) }}"class="flex-c-m trans-04 p-lr-25">
-            {{ Str::upper($lang) }}
-        </a>
-    @endforeach
+- In the header page:-
+هيعملي لينك يبدل بين اللغات زي زرار 
+    <ul> <li>
+             @foreach (LaravelLocalization::getSupportedLocales() as $lang => $value)
+                @if ($lang == App::currentLocale())
+                    @continue
+                @endif
+                <a rel="alternate" hreflang="{{ $lang }}" href="{{ LaravelLocalization::getLocalizedURL($lang, null, [], true) }}"class="flex-c-m trans-04 p-lr-25">
+                    {{ Str::upper($lang) }}
+                </a>
+            @endforeach
+    </ul> </li>
 ------------------------------------------------------------------------------------------
 
 1- insert in db category, product, seller
@@ -868,6 +871,42 @@ translation:
     - forloop $product depond on App::currentLocale().
     - https://github.com/spatie/laravel-translatable.
     - handel it with package in model, setup, dashboard view.
+----------------------------------------------------------------------------------------------------
+- How to deal with spatie/laravel-translatable
+   1- download package
+   2- Category Migration -->   $table->string('name');    
+   3- Category Model --> 
+            use HasTranslations;
+            protected $fillable = ['name'];
+            public $translatable = ['name'];  --> ده هيخلي الاسم يقبل json 
+    4- lang --> ar folder, en folder
+        return [
+            'name_ar' => 'Arabic Name',
+            'name_en' => 'English Name',
+            'submit' => 'Submit'
+        ];
+    5- CategoryController
+        public function store(Request $request){
+            // return $request; //{"_token": "","name_ar": "تليفونات","name_en": "Phones"}
+            $request->validate([
+                'name_ar'=>['required'],
+                'name_en'=>['required'],
+            ]);
+    
+            $category = Category::create([
+                'name'=> [
+                    $request->post('name_ar'),
+                    $request->post('name_en'),
+                ]
+            ]);
+    
+            if(!$category){
+                // Session::flash("error", "something went wrong");
+                return redirect()->back();
+            }
+            // Session::flash("error", "Category added Successfully");
+            return redirect()->back();
+        }
 -----------------------------------------------------------------------------------------------------
 الفرق بين حساب البائع وحساب البائع الخاص بك 
 
