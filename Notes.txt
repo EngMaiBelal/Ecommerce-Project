@@ -898,10 +898,7 @@ translation:
             ]);
     
             $category = Category::create([
-                'name'=> [
-                    'en'=> $request->name['en'],
-                    'ar'=> $request->name['ar']
-                ]
+                'name'=> $request->name
             ]);
     
             if(!$category){ Session::flash("error", "something went wrong");  return redirect()->back(); }
