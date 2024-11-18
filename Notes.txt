@@ -886,27 +886,35 @@ translation:
             'submit' => 'Submit'
         ];
     5- CategoryController
-        public function store(Request $request){
-            // return $request; //{"_token": "","name_ar": "تليفونات","name_en": "Phones"}
+
+         - create(){
+            $categories = Category::all();
+            return view('category', compact('categories'));
+
+        - store(Request $request)
+            // return $request; --> {"_token": "","name_ar": "تليفونات","name_en": "Phones"}
             $request->validate([
-                'name_ar'=>['required'],
-                'name_en'=>['required'],
+                'name_ar'=>['required'], 
+                'name_en'=>['required']
             ]);
-    
+
             $category = Category::create([
                 'name'=> [
-                    $request->post('name_ar'),
-                    $request->post('name_en'),
+                    'ar'=> $request->post('name_ar'),
+                    'en'=> $request->post('name_en'),
                 ]
             ]);
     
-            if(!$category){
-                // Session::flash("error", "something went wrong");
-                return redirect()->back();
-            }
-            // Session::flash("error", "Category added Successfully");
+            if(!$category){ Session::flash("error", "something went wrong");  return redirect()->back(); }
+            Session::flash("error", "Category added Successfully");
             return redirect()->back();
-        }
+
+        6- In view عشان هعرض الداتا بقي
+                @foreach($categories as $category)
+                    {{ $category->getTranslation('name', App::currentLocale()) }}
+                @endforeach
+
+
 -----------------------------------------------------------------------------------------------------
 الفرق بين حساب البائع وحساب البائع الخاص بك 
 
