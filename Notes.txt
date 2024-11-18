@@ -892,15 +892,21 @@ translation:
             return view('category', compact('categories'));
 
         - store(Request $request)
-            // return $request; --> {"_token": "","name_ar": "تليفونات","name_en": "Phones"}
+            // return $request; --> {"_token": "","name" => ["ar"=>"تليفونات","en": "Phones"]}
            $request->validate([
-            'name.*'=>['required'],
+                'name.*'=>['required'],
             ]);
-    
-            $category = Category::create([
-                'name'=> $request->name
-            ]);
-    
+            ---------------------------------------------------------------------------------------
+            a- First way:-
+                $category = Category::create([
+                    'name'=> $request->name
+                ]);
+            b- Second way:-
+                $category = new Category;
+                $category->setTranslations('name', $request->name);
+                $category->save();
+            ---------------------------------------------------------------------------------------
+            
             if(!$category){ Session::flash("error", "something went wrong");  return redirect()->back(); }
             Session::flash("error", "Category added Successfully");
             return redirect()->back();
@@ -921,13 +927,17 @@ translation:
                 </div>
                 <button type="submit" class="btn btn-primary">{{__('frontend.submit')}}</button>
             </form>
-        6- In view عشان هعرض الداتا بقي
+        7- In view عشان هعرض الداتا بقي
 
                 @foreach($categories as $category)
                     {{ $category->getTranslation('name', App::currentLocale()) }}
                 @endforeach
-
-
+        8- In validation message error --> lang\ar\validation.php
+                'attributes' => [
+                    'name.ar' => 'الاسم بالعربي',
+                    'name.en' => 'الاسم بالانجليزي'
+                ],
+            وهكذا في الانجليش
 -----------------------------------------------------------------------------------------------------
 الفرق بين حساب البائع وحساب البائع الخاص بك 
 
