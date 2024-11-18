@@ -893,23 +893,39 @@ translation:
 
         - store(Request $request)
             // return $request; --> {"_token": "","name_ar": "تليفونات","name_en": "Phones"}
-            $request->validate([
-                'name_ar'=>['required'], 
-                'name_en'=>['required']
+           $request->validate([
+            'name.*'=>['required'],
             ]);
-
+    
             $category = Category::create([
                 'name'=> [
-                    'ar'=> $request->post('name_ar'),
-                    'en'=> $request->post('name_en'),
+                    'en'=> $request->name['en'],
+                    'ar'=> $request->name['ar']
                 ]
             ]);
     
             if(!$category){ Session::flash("error", "something went wrong");  return redirect()->back(); }
             Session::flash("error", "Category added Successfully");
             return redirect()->back();
+        6- form
 
+          <form class="w-50 m-auto mt-5" action="{{route('category.store')}}"  method="POST">
+                @csrf
+                <div class="mb-3">
+                    <label for="exampleInputName1" class="form-label">{{__('frontend.name_ar')}}</label>
+                    <input name="name[ar]" type="text" class="form-control" id="exampleInputName1" aria-describedby="nameHelp">
+                    @error('name.ar') <p class="text-danger">{{ $message }}</p> @enderror
+                </div>
+                <div class="mb-3">
+                    <label for="exampleInputName1" class="form-label">{{__('frontend.name_en')}}</label>
+                    <input name="name[en]" type="text" class="form-control" id="exampleInputName1" aria-describedby="nameHelp">
+                    @error('name.en') <p class="text-danger">{{ $message }}</p> @enderror
+                
+                </div>
+                <button type="submit" class="btn btn-primary">{{__('frontend.submit')}}</button>
+            </form>
         6- In view عشان هعرض الداتا بقي
+
                 @foreach($categories as $category)
                     {{ $category->getTranslation('name', App::currentLocale()) }}
                 @endforeach
